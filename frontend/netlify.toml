@@ -1,0 +1,16 @@
+# Deploy do SPA Angular (projeto "app") na Netlify.
+# A base do site na Netlify é /frontend, então os caminhos abaixo são relativos a esta pasta.
+
+[build]
+  command = "npm run build"
+  publish = "dist/app/browser"
+
+[build.environment]
+  NODE_VERSION = "24"
+  NODE_OPTIONS = "--max-old-space-size=1536"
+
+# Fallback do roteador do Angular: qualquer rota sem arquivo estático serve o index.html.
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
