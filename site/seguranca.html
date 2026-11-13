@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Segurança · Delta</title>
+<meta name="description" content="Isolamento de dados no banco (RLS), tokens só como hash, credenciais criptografadas e passkeys.">
+<link rel="canonical" href="http://localhost:4400/seguranca.html">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Segurança · Delta">
+<meta property="og:description" content="Isolamento de dados no banco (RLS), tokens só como hash, credenciais criptografadas e passkeys.">
+<meta property="og:url" content="http://localhost:4400/seguranca.html">
+<meta property="og:locale" content="pt_BR">
+<meta name="theme-color" content="#0a84ff">
+<link rel="icon" href="/assets/icone.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/assets/site.css">
+
+</head>
+<body>
+<a class="skip" href="#conteudo">Pular para o conteúdo</a>
+<header class="top">
+  <div class="wrap">
+    <a class="brand" href="/"><span aria-hidden="true">Δ</span>Delta</a>
+    <nav class="main" aria-label="Principal"><ul>
+<li><a href="/">Produto</a></li>
+<li><a href="/precos.html">Preços</a></li>
+<li><a href="/ferramentas/">Ferramentas</a></li>
+<li><a href="/academy/">Academy</a></li>
+<li><a href="/desenvolvedores.html">Desenvolvedores</a></li>
+    </ul></nav>
+    <a class="btn primary" href="http://localhost:4300/cadastro">Testar grátis</a>
+  </div>
+</header>
+<main id="conteudo">
+
+<article class="post">
+  <h1>Segurança</h1>
+  <p>O Delta foi construído para que um erro no código não exponha dados de outra agência.</p>
+  <h2>Isolamento no banco de dados</h2>
+  <p>Toda tabela com dados de agência tem Row Level Security no PostgreSQL. A aplicação conecta com um usuário que não consegue ignorar essas regras: se uma consulta esquecer um filtro, o banco devolve só os dados da agência certa. Um teste automático impede que uma tabela nova entre sem essa proteção.</p>
+  <h2>Credenciais e tokens</h2>
+  <ul class="check">
+    <li>Tokens de acesso às plataformas e chaves dos apps ficam criptografados.</li>
+    <li>Tokens de API, de convites e de links públicos são guardados só como hash.</li>
+    <li>Webhooks de saída são assinados e não chegam a endereços internos.</li>
+  </ul>
+  <h2>Acesso das pessoas</h2>
+  <ul class="check">
+    <li>Verificação em duas etapas e passkeys.</li>
+    <li>Papéis por agência (dono, administrador, analista e cliente) e portal do cliente só com os projetos dele.</li>
+    <li>Registro de auditoria de quem fez o quê.</li>
+  </ul>
+  <h2>WhatsApp e e-mail com consentimento</h2>
+  <p>Envios só para contatos com consentimento registrado, e descadastro em um clique.</p>
+</article>
+</main>
+<footer class="bottom">
+  <div class="wrap cols">
+    <div><strong>Delta</strong><p>Relatórios e inteligência de marketing para agências.</p></div>
+    <div><strong>Produto</strong><ul>
+      <li><a href="/">Visão geral</a></li><li><a href="/precos.html">Preços</a></li><li><a href="/seguranca.html">Segurança</a></li><li><a href="/desenvolvedores.html">API, MCP e Connect</a></li>
+    </ul></div>
+    <div><strong>Aprender</strong><ul>
+      <li><a href="/academy/">Academy</a></li><li><a href="/glossario.html">Glossário</a></li><li><a href="/ferramentas/">Ferramentas gratuitas</a></li>
+    </ul></div>
+    <div><strong>Parcerias</strong><ul><li><a href="/afiliados.html">Programa de afiliados</a></li><li><a href="http://localhost:4300/login">Entrar</a></li></ul></div>
+  </div>
+</footer>
+
+</body>
+</html>

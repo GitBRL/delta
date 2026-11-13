@@ -1,0 +1,36 @@
+.invite-summary {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-3);
+  margin-bottom: var(--ds-space-5);
+  padding: var(--ds-space-3);
+  border-radius: var(--ds-radius-md);
+  background: var(--ds-fill);
+}
+
+.agency-mark {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 44px;
+  height: 44px;
+  border-radius: var(--ds-radius-md);
+  background: linear-gradient(135deg, var(--ds-accent), color-mix(in oklch, var(--ds-accent) 55%, #a855f7));
+  color: #fff;
+  font: var(--ds-text-title-3);
+  font-weight: 700;
+}
+
+.note {
+  margin: 0 0 var(--ds-space-4);
+  font: var(--ds-text-footnote);
+  color: var(--ds-text-secondary);
+}
+
+.form .note {
+  margin-bottom: 0;
+}
+
+.general-error {
+  margin-bottom: var(--ds-space-4);
+}

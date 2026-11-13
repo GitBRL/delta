@@ -1,0 +1,234 @@
+<a class="back" routerLink="/projetos">
+  <svg lucideArrowLeft [size]="16"></svg>
+  Projetos
+</a>
+
+@if (notFound()) {
+  <div class="state ds-glass" role="alert">
+    <p class="m-0 text-headline">Projeto não encontrado</p>
+    <p class="m-0 text-footnote text-fg-muted">Ele pode ter sido removido ou pertencer a outra agência.</p>
+  </div>
+} @else {
+  <header class="mb-6">
+    @if (project.hasValue()) {
+      <p class="m-0 text-footnote font-semibold uppercase tracking-wider text-fg-subtle">
+        {{ nicheLabel(project.value().data.niche) }}
+      </p>
+      <h1 class="m-0 mt-1 text-large-title font-bold tracking-tight">{{ project.value().data.name }}</h1>
+    } @else {
+      <ds-skeleton width="120px" height="12px" />
+      <ds-skeleton width="280px" height="36px" />
+    }
+  </header>
+
+  <div class="layout">
+    <div class="side">
+    <ds-glass-card padding="lg">
+      <app-project-health [projectId]="id()" />
+    </ds-glass-card>
+
+    <ds-glass-card padding="lg">
+      @if (linked.hasValue() && connections.hasValue()) {
+        <app-linked-accounts
+          [connections]="connectionList()"
+          [linked]="linkedAccounts()"
+          [providerName]="providerName()"
+          [canEdit]="canEdit()"
+          [saving]="savingAccounts()"
+          (save)="saveAccounts($event)"
+        />
+      } @else {
+        <div class="flex flex-col gap-2">
+          <ds-skeleton width="50%" height="16px" />
+          <ds-skeleton width="80%" />
+        </div>
+      }
+    </ds-glass-card>
+
+    <ds-glass-card padding="lg">
+      @if (project.hasValue()) {
+        <app-project-goals
+          [goals]="project.value().data.goals"
+          [canEdit]="canEdit()"
+          [saving]="savingGoals()"
+          [serverErrors]="goalsErrors()"
+          [(editing)]="goalsEditing"
+          (save)="saveGoals($event)"
+        />
+      } @else {
+        <div class="flex flex-col gap-2">
+          <ds-skeleton width="50%" height="16px" />
+          <ds-skeleton width="70%" />
+        </div>
+      }
+    </ds-glass-card>
+
+    <ds-glass-card padding="lg">
+      <app-project-goal-list [projectId]="id()" [canEdit]="canEdit()" [linkedProviders]="linkedProviders()" />
+    </ds-glass-card>
+
+    <ds-glass-card padding="lg">
+      <app-project-reports [projectId]="id()" />
+    </ds-glass-card>
+
+    <ds-glass-card padding="lg">
+      <app-project-posts [projectId]="id()" />
+    </ds-glass-card>
+
+    <ds-glass-card padding="lg">
+      <app-project-timeline
+        [projectId]="id()"
+        [canEdit]="canEdit()"
+        [events]="timelineEvents()"
+        [loading]="timeline.isLoading()"
+        (changed)="timeline.reload()"
+      />
+    </ds-glass-card>
+
+    <ds-glass-card padding="lg">
+      <app-project-manual-values [projectId]="id()" [canEdit]="canEdit()" (changed)="metrics.reload()" />
+    </ds-glass-card>
+
+    @if (canEdit()) {
+      <ds-glass-card padding="lg">
+        <app-project-contacts [projectId]="id()" />
+      </ds-glass-card>
+    }
+    </div>
+
+    <section class="main" aria-labelledby="kpi-title">
+      <div class="toolbar">
+        <div>
+          <h2 id="kpi-title" class="m-0 text-title-3 font-semibold">Indicadores</h2>
+          <p class="m-0 text-footnote text-fg-muted">
+            @if (range(); as r) {
+              {{ formatRange(r) }} ·
+            }
+            dados até ontem ({{ lastDayLabel }})
+          </p>
+        </div>
+        <app-period-picker
+          [(preset)]="preset"
+          [(custom)]="custom"
+          [(compare)]="compare"
+          [error]="preset() === 'custom' ? rangeError() : null"
+        />
+      </div>
+
+      @if (linkedAccounts().length > 0 && !rangeError()) {
+        <app-attention-radar
+          [result]="attentionResult()"
+          [loading]="attention.isLoading()"
+          [error]="attentionError()"
+          [selectableMetrics]="metricKeysInGrid()"
+          [selectedMetric]="selected()?.key ?? null"
+          [canCreateAction]="canEdit()"
+          (metricSelect)="focusMetric($event)"
+          (actionCreate)="createAction($event)"
+          (retry)="attention.reload()"
+        />
+      }
+
+      @if (linked.hasValue() && linkedAccounts().length === 0) {
+        <div class="state ds-glass">
+          <p class="m-0 text-headline">Nenhuma conta vinculada</p>
+          <p class="m-0 text-footnote text-fg-muted">Vincule contas a este projeto para ver os indicadores.</p>
+        </div>
+      } @else if (metricsError()) {
+        <div class="state ds-glass" role="alert">
+          <p class="m-0 text-headline">{{ metricsError() }}</p>
+          <button ds-button variant="secondary" size="sm" (click)="metrics.reload()">Tentar de novo</button>
+        </div>
+      } @else if (metrics.isLoading() && !metrics.hasValue()) {
+        <div class="kpis" aria-busy="true">
+          @for (i of [1, 2, 3, 4]; track i) {
+            <div class="kpi-skeleton ds-glass">
+              <ds-skeleton width="50%" height="12px" />
+              <ds-skeleton width="70%" height="28px" />
+            </div>
+          }
+        </div>
+      } @else if (results().length) {
+        @if (featuredResults().length) {
+          <div class="kpis" [attr.aria-busy]="metrics.isLoading()" role="group" aria-label="Indicadores do período">
+            @for (m of featuredResults(); track m.key) {
+              <ng-container *ngTemplateOutlet="kpiTile; context: { $implicit: m, index: $index }" />
+            }
+          </div>
+        }
+
+        @if (customResults().length) {
+          <section class="custom" aria-labelledby="custom-title">
+            <div class="custom-head">
+              <h3 id="custom-title" class="m-0 text-headline">Indicadores personalizados</h3>
+              <a class="manage" routerLink="/indicadores">Gerenciar</a>
+            </div>
+            <div class="kpis" [attr.aria-busy]="metrics.isLoading()" role="group" aria-label="Indicadores personalizados do período">
+              @for (m of customResults(); track m.key) {
+                <ng-container *ngTemplateOutlet="kpiTile; context: { $implicit: m, index: $index }" />
+              }
+            </div>
+          </section>
+        }
+
+        <ng-template #kpiTile let-m let-index="index">
+          <div
+            class="kpi"
+            role="button"
+            tabindex="0"
+            [attr.aria-pressed]="selected()?.key === m.key"
+            [attr.aria-label]="'Ver gráfico de ' + m.label"
+            (click)="selectedKey.set(m.key)"
+            (keydown.enter)="selectedKey.set(m.key)"
+            (keydown.space)="$event.preventDefault(); selectedKey.set(m.key)"
+          >
+            <ds-kpi-tile
+              [label]="m.label"
+              [value]="m.value"
+              [formatter]="formatterFor(m.unit, m.decimals)"
+              [trend]="trend(m)"
+              [direction]="kpiDirection(m.direction)"
+              [sentiment]="m.sentiment"
+              [approximate]="m.approximate"
+              [status]="statusOf(m.key)"
+              [comparisonLabel]="comparisonCaption()"
+              [style.animation-delay.ms]="index * 40"
+            />
+          </div>
+        </ng-template>
+
+        @if (selected(); as m) {
+          <ds-glass-card padding="lg" class="chart-card" id="metric-chart">
+            <h3 class="m-0 mb-4 text-headline">{{ m.label }}</h3>
+            <ds-area-chart
+              [label]="m.label"
+              [series]="m.series"
+              [comparison]="compare() === 'none' ? [] : m.previous_series"
+              [valueFormatter]="formatterFor(m.unit, m.decimals)"
+              [comparisonLabel]="compare() === 'previous_year' ? 'Ano anterior' : 'Período anterior'"
+              [markers]="markers()"
+            />
+            @if (markers().length) {
+              <p class="m-0 mt-2 text-caption text-fg-subtle">⚑ Linhas tracejadas: marcos da linha do tempo (passe o mouse ou use as setas).</p>
+            }
+          </ds-glass-card>
+        }
+      }
+
+      <ds-glass-card padding="lg" class="actions-card">
+        <app-project-actions
+          [projectId]="id()"
+          [canEdit]="canEdit()"
+          [labels]="metricLabels()"
+          [linkedProviders]="linkedProviders()"
+        />
+      </ds-glass-card>
+
+      @if (canEdit()) {
+        <ds-glass-card padding="lg" class="copilot-card" aria-labelledby="copilot-title">
+          <app-project-copilot [projectId]="id()" />
+        </ds-glass-card>
+      }
+    </section>
+  </div>
+}

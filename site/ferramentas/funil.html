@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Diagnóstico de funil · Ferramentas gratuitas do Delta</title>
+<meta name="description" content="Veja as taxas de clique e de conversão da sua campanha e onde está o maior gargalo.">
+<link rel="canonical" href="http://localhost:4400/ferramentas/funil.html">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Diagnóstico de funil · Ferramentas gratuitas do Delta">
+<meta property="og:description" content="Veja as taxas de clique e de conversão da sua campanha e onde está o maior gargalo.">
+<meta property="og:url" content="http://localhost:4400/ferramentas/funil.html">
+<meta property="og:locale" content="pt_BR">
+<meta name="theme-color" content="#0a84ff">
+<link rel="icon" href="/assets/icone.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/assets/site.css">
+
+</head>
+<body>
+<a class="skip" href="#conteudo">Pular para o conteúdo</a>
+<header class="top">
+  <div class="wrap">
+    <a class="brand" href="/"><span aria-hidden="true">Δ</span>Delta</a>
+    <nav class="main" aria-label="Principal"><ul>
+<li><a href="/">Produto</a></li>
+<li><a href="/precos.html">Preços</a></li>
+<li><a href="/ferramentas/">Ferramentas</a></li>
+<li><a href="/academy/">Academy</a></li>
+<li><a href="/desenvolvedores.html">Desenvolvedores</a></li>
+    </ul></nav>
+    <a class="btn primary" href="http://localhost:4300/cadastro">Testar grátis</a>
+  </div>
+</header>
+<main id="conteudo">
+
+<article class="post">
+  <p class="eyebrow">Ferramenta gratuita</p>
+  <h1>Diagnóstico de funil</h1>
+  <p>Veja as taxas de clique e de conversão da sua campanha e onde está o maior gargalo.</p>
+  
+<form class="calc" id="f" novalidate>
+  <label>Impressões <input name="impressions" type="number" inputmode="numeric" min="0" step="1" value="50000"></label>
+  <label>Cliques <input name="clicks" type="number" inputmode="numeric" min="0" step="1" value="450"></label>
+  <label>Conversões <input name="conversions" type="number" inputmode="numeric" min="0" step="1" value="9"></label>
+  <label>CTR de referência (%) <input name="refCtr" type="number" inputmode="decimal" min="0.01" step="0.01" value="1.2"></label>
+  <label>Taxa de conversão de referência (%) <input name="refCvr" type="number" inputmode="decimal" min="0.01" step="0.01" value="2.5"></label>
+</form>
+  <div class="result" id="resultado" aria-live="polite"><p>Preencha os campos para ver o resultado.</p></div>
+  
+  <p class="note">A conta é feita no seu navegador: nada do que você digita é enviado.</p>
+</article>
+</main>
+<footer class="bottom">
+  <div class="wrap cols">
+    <div><strong>Delta</strong><p>Relatórios e inteligência de marketing para agências.</p></div>
+    <div><strong>Produto</strong><ul>
+      <li><a href="/">Visão geral</a></li><li><a href="/precos.html">Preços</a></li><li><a href="/seguranca.html">Segurança</a></li><li><a href="/desenvolvedores.html">API, MCP e Connect</a></li>
+    </ul></div>
+    <div><strong>Aprender</strong><ul>
+      <li><a href="/academy/">Academy</a></li><li><a href="/glossario.html">Glossário</a></li><li><a href="/ferramentas/">Ferramentas gratuitas</a></li>
+    </ul></div>
+    <div><strong>Parcerias</strong><ul><li><a href="/afiliados.html">Programa de afiliados</a></li><li><a href="http://localhost:4300/login">Entrar</a></li></ul></div>
+  </div>
+</footer>
+<script type="module">
+import { funnel, format } from '/assets/calc.mjs';
+const f = document.getElementById('f'); const out = document.getElementById('resultado');
+const run = () => { const r = funnel({ impressions: Number(f.impressions.value), clicks: Number(f.clicks.value), conversions: Number(f.conversions.value) }, { ctr: Number(f.refCtr.value), conversionRate: Number(f.refCvr.value) });
+  out.innerHTML = r === null ? '<p>Confira os números (cliques não passam das impressões, conversões não passam dos cliques).</p>'
+    : `<strong class="big">CTR ${format.percent(r.ctr)} · conversão ${format.percent(r.conversionRate)}</strong><p>${r.bottleneck === null ? 'As duas etapas estão acima das referências.' : `O maior gargalo está na etapa de <b>${r.bottleneck}</b>.`}</p>`; };
+f.addEventListener('input', run); run();
+</script>
+</body>
+</html>

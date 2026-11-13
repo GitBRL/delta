@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+# Usa "docker compose" se o plugin existir; senão roda o Compose dentro da imagem docker:cli.
+set -euo pipefail
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+cd "$ROOT"
+HOST_UID="$(id -u)"
+HOST_GID="$(id -g)"
+export HOST_UID HOST_GID
+
+if docker compose version >/dev/null 2>&1; then
+    exec docker compose "$@"
+fi
+
+TTY_FLAGS=(-i)
+if [ -t 0 ] && [ -t 1 ]; then TTY_FLAGS=(-it); fi
+
+exec docker run --rm "${TTY_FLAGS[@]}" \
+    -v /var/run/docker.sock:/var/run/docker.sock \
+    -v "$ROOT:$ROOT" -w "$ROOT" \
+    -e HOST_UID -e HOST_GID \
+    docker:cli compose "$@"

@@ -1,0 +1,221 @@
+<article class="report" [class.is-selectable]="selectable()">
+  @if (showCover()) {
+  <header class="cover" [style.--brand-color]="brand()?.color ?? null">
+    <span class="glow" aria-hidden="true"></span>
+    @if (brand()?.logo_url; as logo) {
+      <img class="brand-logo" [src]="logo" [alt]="brand()?.name ?? 'Logo da agência'" />
+    } @else if (!brand()?.hide_delta_badge) {
+      <span class="delta" aria-hidden="true">Δ</span>
+    }
+    @if (brand()?.name ?? data().agency; as agency) {
+      <p class="agency">{{ agency }}</p>
+    }
+    <h1 class="title">{{ data().title }}</h1>
+    <p class="project">{{ data().project.name }}</p>
+    <p class="period">
+      {{ data().period.label }}
+      @if (data().comparison; as c) {
+        <span class="vs">· comparado a {{ formatRange(c) }}</span>
+      }
+    </p>
+  </header>
+  }
+
+  @for (section of data().sections; track section.id) {
+    <section class="section" [attr.aria-labelledby]="'rs-' + section.id" [attr.data-section]="section.id">
+      <h2 class="section-title" [id]="'rs-' + section.id">{{ section.title }}</h2>
+
+      @for (block of section.blocks; track block.id) {
+        <div
+          class="block"
+          [attr.data-block]="block.id"
+          [attr.data-type]="block.type"
+          [class.is-selected]="selectable() && selectedId() === block.id"
+          [attr.role]="selectable() ? 'button' : null"
+          [attr.tabindex]="selectable() ? 0 : null"
+          [attr.aria-pressed]="selectable() ? selectedId() === block.id : null"
+          [attr.aria-label]="selectable() ? 'Editar bloco ' + blockTypeLabel(block.type) : null"
+          (click)="pick(block.id)"
+          (keydown.enter)="pick(block.id)"
+          (keydown.space)="selectable() && $event.preventDefault(); pick(block.id)"
+        >
+          @switch (block.type) {
+            @case ('kpis') {
+              @if (blockTitle(block); as t) {
+                <h3 class="block-title">{{ t }}</h3>
+              }
+              @if (block.metrics.length === 0) {
+                <p class="empty">Sem dados: conecte as contas deste canal ao projeto.</p>
+              } @else {
+                <div class="kpis">
+                  @for (m of block.metrics; track m.key) {
+                    <ds-kpi-tile
+                      [label]="label(m, block.mixed)"
+                      [value]="m.value"
+                      [formatter]="formatter(m)"
+                      [trend]="trend(m)"
+                      [direction]="kpiDirection(m.direction)"
+                      [sentiment]="m.sentiment"
+                      [approximate]="m.approximate"
+                      [status]="m.status ?? null"
+                      [comparisonLabel]="comparisonCaption()"
+                      [hint]="hasComparison() ? 'antes: ' + format(m, m.previous) : undefined"
+                    />
+                  }
+                </div>
+              }
+            }
+
+            @case ('chart') {
+              @if (block.metric; as m) {
+                <div class="chart-card">
+                  <div class="chart-head">
+                    <h3 class="chart-title">{{ blockTitle(block) ?? m.label }}</h3>
+                    <p class="chart-value">
+                      <strong>{{ format(m, m.value) }}</strong>
+                      @if (hasComparison() && m.change_pct !== null) {
+                        <span class="change" [attr.data-sentiment]="m.sentiment">{{ changeText(m.change_pct) }}</span>
+                        <span class="caption">{{ comparisonCaption() }}</span>
+                      }
+                    </p>
+                  </div>
+                  <ds-area-chart
+                    [label]="m.label"
+                    [series]="m.series ?? []"
+                    [comparison]="hasComparison() ? (m.previous_series ?? []) : []"
+                    [valueFormatter]="formatter(m)"
+                    [comparisonLabel]="comparisonLabel()"
+                    [height]="200"
+                  />
+                </div>
+              } @else {
+                @if (blockTitle(block); as t) {
+                  <h3 class="block-title">{{ t }}</h3>
+                }
+                <p class="empty">Sem dados para este gráfico: conecte as contas deste canal ao projeto.</p>
+              }
+            }
+
+            @case ('table') {
+              @if (blockTitle(block); as t) {
+                <h3 class="block-title">{{ t }}</h3>
+              }
+              @if (block.metrics.length === 0) {
+                <p class="empty">Sem dados: conecte as contas deste canal ao projeto.</p>
+              } @else {
+                <div class="table-wrap">
+                  <table class="table">
+                    <thead>
+                      <tr>
+                        <th scope="col">Métrica</th>
+                        <th scope="col" class="num">Período</th>
+                        @if (hasComparison()) {
+                          <th scope="col" class="num">Anterior</th>
+                          <th scope="col" class="num">Variação</th>
+                        }
+                      </tr>
+                    </thead>
+                    <tbody>
+                      @for (m of block.metrics; track m.key) {
+                        <tr>
+                          <th scope="row">
+                            {{ m.label }}
+                            @if (block.mixed) {
+                              <span class="src">· {{ m.provider_name }}</span>
+                            }
+                            @if (m.approximate) {
+                              <span class="src" title="Soma aproximada de várias contas">(aprox.)</span>
+                            }
+                          </th>
+                          <td class="num ds-tabular">{{ format(m, m.value) }}</td>
+                          @if (hasComparison()) {
+                            <td class="num ds-tabular">{{ format(m, m.previous) }}</td>
+                            <td class="num">
+                              <span class="change" [attr.data-sentiment]="m.sentiment">{{ changeText(m.change_pct) }}</span>
+                            </td>
+                          }
+                        </tr>
+                      }
+                    </tbody>
+                  </table>
+                </div>
+              }
+            }
+
+            @case ('text') {
+              @if (blockTitle(block); as t) {
+                <h3 class="block-title">{{ t }}</h3>
+              }
+              @let nodes = textNodes(block.content);
+              @if (nodes.length) {
+                <div class="text">
+                  @for (node of nodes; track $index) {
+                    @if (node.kind === 'ul') {
+                      <ul>
+                        @for (item of node.items; track $index) {
+                          <li>
+                            @for (seg of item; track $index) {
+                              @if (seg.bold) {
+                                <strong>{{ seg.text }}</strong>
+                              } @else {
+                                {{ seg.text }}
+                              }
+                            }
+                          </li>
+                        }
+                      </ul>
+                    } @else {
+                      <p>
+                        @for (line of node.lines; track $index; let last = $last) {
+                          @for (seg of line; track $index) {
+                            @if (seg.bold) {
+                              <strong>{{ seg.text }}</strong>
+                            } @else {
+                              {{ seg.text }}
+                            }
+                          }
+                          @if (!last) {
+                            <br />
+                          }
+                        }
+                      </p>
+                    }
+                  }
+                </div>
+              } @else if (selectable()) {
+                <p class="empty">Texto vazio: escreva a análise no painel ao lado.</p>
+              }
+            }
+
+            @case ('attention') {
+              @if (blockTitle(block); as t) {
+                <h3 class="block-title">{{ t }}</h3>
+              }
+              <app-report-signals [signals]="block.signals" />
+            }
+          }
+        </div>
+      }
+
+      @for (p of pending()[section.id] ?? []; track p.id) {
+        <div
+          class="block placeholder"
+          [attr.data-block]="p.id"
+          [class.is-selected]="selectedId() === p.id"
+          role="button"
+          tabindex="0"
+          [attr.aria-label]="'Completar bloco ' + blockTypeLabel(p.type)"
+          (click)="pick(p.id)"
+          (keydown.enter)="pick(p.id)"
+        >
+          <strong>{{ blockTypeLabel(p.type) }}</strong>
+          <span>{{ p.message }}</span>
+        </div>
+      }
+
+      @if (section.blocks.length === 0 && !(pending()[section.id] ?? []).length && selectable()) {
+        <p class="empty">Seção vazia: adicione blocos na estrutura.</p>
+      }
+    </section>
+  }
+</article>

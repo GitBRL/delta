@@ -1,0 +1,122 @@
+<header class="head">
+  <div>
+    <p class="m-0 text-footnote font-semibold uppercase tracking-wider text-fg-subtle">{{ tenant.current()?.name }}</p>
+    <h1 class="m-0 mt-1 text-large-title font-bold tracking-tight">Indicadores</h1>
+    <p class="m-0 mt-2 text-subhead text-fg-muted">
+      Fórmulas da sua agência sobre as métricas das plataformas, inclusive cruzando canais.
+    </p>
+  </div>
+  @if (canEdit()) {
+    <a ds-button routerLink="/indicadores/novo">
+      <svg lucidePlus [size]="16"></svg>
+      Novo indicador
+    </a>
+  } @else {
+    <span class="readonly-badge">Somente leitura</span>
+  }
+</header>
+
+<section aria-labelledby="mine-title" class="section">
+  <h2 id="mine-title" class="m-0 text-title-3 font-semibold">Da agência</h2>
+
+  @if (customs.isLoading() && !customs.hasValue()) {
+    <div class="grid" aria-busy="true">
+      @for (i of [1, 2, 3]; track i) {
+        <div class="card-skeleton ds-glass">
+          <ds-skeleton width="55%" height="16px" />
+          <ds-skeleton width="90%" />
+          <ds-skeleton width="35%" height="12px" />
+        </div>
+      }
+    </div>
+  } @else if (loadError()) {
+    <div class="state ds-glass" role="alert">
+      <p class="m-0 text-headline">{{ loadError() }}</p>
+      <button ds-button variant="secondary" size="sm" (click)="customs.reload()">Tentar de novo</button>
+    </div>
+  } @else if (items().length === 0) {
+    <div class="state ds-glass">
+      <svg lucideSigma [size]="36" class="text-fg-subtle"></svg>
+      <p class="m-0 text-headline">Nenhum indicador ainda</p>
+      <p class="m-0 text-footnote text-fg-muted">
+        @if (canEdit()) {
+          Crie o primeiro ou comece por um modelo abaixo.
+        } @else {
+          A equipe da agência ainda não criou indicadores.
+        }
+      </p>
+    </div>
+  } @else {
+    <div class="grid">
+      @for (m of items(); track m.id) {
+        <ds-glass-card padding="lg" class="metric" animate.enter="ds-enter-fade-up">
+          <div class="metric-head">
+            <h3 class="m-0 text-headline">{{ m.name }}</h3>
+            <code class="key">{{ m.key }}</code>
+          </div>
+          @if (m.description) {
+            <p class="m-0 text-footnote text-fg-muted">{{ m.description }}</p>
+          }
+          <app-formula-chips [formula]="m.formula" [labels]="labels()" />
+          <div class="tags">
+            <span class="tag">{{ unitLabel(m.unit) }}</span>
+            <span class="tag">{{ directionLabel(m.direction) }}</span>
+            @for (p of m.providers; track p) {
+              <span class="tag provider">{{ providerName()(p) }}</span>
+            }
+          </div>
+
+          @if (deleteErrors()[m.id]; as message) {
+            <p class="delete-error" role="alert">{{ message }}</p>
+          }
+
+          @if (canEdit()) {
+            <div class="actions">
+              @if (confirmingId() === m.id) {
+                <span class="text-footnote text-fg-muted">Excluir “{{ m.name }}”?</span>
+                <button ds-button variant="ghost" size="sm" (click)="confirmingId.set(null)">Cancelar</button>
+                <button
+                  ds-button
+                  variant="destructive"
+                  size="sm"
+                  [loading]="deletingId() === m.id"
+                  (click)="remove(m)"
+                >
+                  Excluir
+                </button>
+              } @else {
+                <a ds-button variant="secondary" size="sm" [routerLink]="['/indicadores', m.id]">
+                  <svg lucidePencil [size]="14"></svg>
+                  Editar
+                </a>
+                <button ds-button variant="ghost" size="sm" (click)="askDelete(m)" [attr.aria-label]="'Excluir ' + m.name">
+                  <svg lucideTrash2 [size]="14"></svg>
+                  Excluir
+                </button>
+              }
+            </div>
+          }
+        </ds-glass-card>
+      }
+    </div>
+  }
+</section>
+
+@if (canEdit() && templateItems().length) {
+  <section aria-labelledby="templates-title" class="section">
+    <div>
+      <h2 id="templates-title" class="m-0 text-title-3 font-semibold">Comece por um modelo</h2>
+      <p class="m-0 mt-1 text-footnote text-fg-muted">Um clique abre o editor já preenchido; ajuste antes de salvar.</p>
+    </div>
+    <div class="grid">
+      @for (t of templateItems(); track t.name) {
+        <button type="button" class="template ds-glass" (click)="useTemplate(t)">
+          <span class="template-icon" aria-hidden="true"><svg lucideSparkles [size]="16"></svg></span>
+          <span class="template-name">{{ t.name }}</span>
+          <span class="template-desc">{{ t.description }}</span>
+          <app-formula-chips [formula]="t.formula" [labels]="labels()" />
+        </button>
+      }
+    </div>
+  </section>
+}

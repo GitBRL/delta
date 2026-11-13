@@ -1,0 +1,54 @@
+@if (open()) {
+  <div id="account-menu" class="account-menu" animate.enter="ds-enter-scale">
+    <a class="menu-item" routerLink="/conta" routerLinkActive="active" ariaCurrentWhenActive="page">
+      <svg dsIcon="user" [size]="16"></svg>
+      <span>Minha conta</span>
+    </a>
+    @if (showDesignSystem()) {
+      <a class="menu-item" routerLink="/design-system">
+        <svg dsIcon="palette" [size]="16"></svg>
+        <span>Design system</span>
+      </a>
+    }
+    <div class="menu-row">
+      <span id="theme-label">Tema</span>
+      <div class="menu-theme" role="radiogroup" aria-labelledby="theme-label">
+        @for (t of themes; track t.mode) {
+          <button
+            type="button"
+            role="radio"
+            class="theme-option"
+            [class.selected]="themeMode() === t.mode"
+            [attr.aria-checked]="themeMode() === t.mode"
+            [title]="t.label"
+            (click)="setTheme(t.mode)"
+          >
+            <svg [dsIcon]="t.icon" [size]="15"></svg>
+            <span class="ds-visually-hidden">{{ t.label }}</span>
+          </button>
+        }
+      </div>
+    </div>
+    <div class="menu-sep" role="separator"></div>
+    <button type="button" class="menu-item danger" (click)="logout()" [disabled]="loggingOut()">
+      <svg dsIcon="log-out" [size]="16"></svg>
+      <span>Sair</span>
+    </button>
+  </div>
+}
+<button
+  type="button"
+  class="account"
+  [class.open]="open()"
+  (click)="toggle()"
+  [attr.aria-expanded]="open()"
+  aria-controls="account-menu"
+>
+  <span class="avatar" aria-hidden="true">{{ initials() }}</span>
+  <span class="who">
+    <span class="ds-visually-hidden">Menu da conta: </span>
+    <strong>{{ user()?.name }}</strong>
+    <span>{{ user()?.email }}</span>
+  </span>
+  <svg class="chevron" dsIcon="chevrons-up-down" [size]="16"></svg>
+</button>

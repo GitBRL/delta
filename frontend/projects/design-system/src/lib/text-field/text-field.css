@@ -1,0 +1,68 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.label {
+  font: var(--ds-text-footnote);
+  font-weight: 600;
+  color: var(--ds-text-secondary);
+}
+
+.input {
+  height: 44px;
+  padding: 0 14px;
+  border: 1px solid var(--ds-separator);
+  border-radius: var(--ds-radius-md);
+  /* Vidro "strong": o texto digitado precisa de contraste firme. */
+  background: var(--ds-glass-bg-strong);
+  color: var(--ds-text);
+  font: var(--ds-text-callout);
+  outline: none;
+  box-shadow:
+    inset 0 1px 2px var(--ds-shadow-color),
+    0 1px 0 var(--ds-glass-highlight);
+  backdrop-filter: var(--ds-glass-filter);
+  -webkit-backdrop-filter: var(--ds-glass-filter);
+}
+
+.input::placeholder {
+  color: var(--ds-text-tertiary);
+}
+
+.input:focus-visible {
+  border-color: var(--ds-accent);
+  box-shadow: 0 0 0 4px var(--ds-accent-soft);
+}
+
+:host(.has-error) .input {
+  border-color: var(--ds-status-critical);
+}
+
+:host(.has-error) .input:focus-visible {
+  box-shadow: 0 0 0 4px color-mix(in oklch, var(--ds-status-critical) 16%, transparent);
+}
+
+:host(.is-disabled) .input {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.message {
+  font: var(--ds-text-footnote);
+}
+
+.error {
+  color: var(--ds-status-critical);
+}
+
+.hint {
+  color: var(--ds-text-secondary);
+}

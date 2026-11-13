@@ -1,0 +1,58 @@
+/*
+ * Ponte tokens → Tailwind v4.
+ * Importar logo após `@import 'tailwindcss'`. `inline` faz as utilities usarem var(--ds-*),
+ * então tema claro/escuro e white label continuam funcionando.
+ */
+@theme inline {
+  --color-bg: var(--ds-bg);
+  --color-elevated: var(--ds-bg-elevated);
+  --color-grouped: var(--ds-bg-grouped);
+  --color-fg: var(--ds-text);
+  --color-fg-muted: var(--ds-text-secondary);
+  --color-fg-subtle: var(--ds-text-tertiary);
+  --color-separator: var(--ds-separator);
+  --color-fill: var(--ds-fill);
+  --color-accent: var(--ds-accent);
+  --color-accent-soft: var(--ds-accent-soft);
+  --color-on-accent: var(--ds-on-accent);
+  --color-healthy: var(--ds-status-healthy);
+  --color-attention: var(--ds-status-attention);
+  --color-critical: var(--ds-status-critical);
+  --color-opportunity: var(--ds-status-opportunity);
+
+  --font-sans: var(--ds-font-sans);
+  --font-mono: var(--ds-font-mono);
+
+  --radius-sm: var(--ds-radius-sm);
+  --radius-md: var(--ds-radius-md);
+  --radius-lg: var(--ds-radius-lg);
+  --radius-xl: var(--ds-radius-xl);
+
+  --shadow-1: var(--ds-shadow-1);
+  --shadow-2: var(--ds-shadow-2);
+  --shadow-3: var(--ds-shadow-3);
+
+  --text-large-title: 34px;
+  --text-large-title--line-height: 41px;
+  --text-title-1: 28px;
+  --text-title-1--line-height: 34px;
+  --text-title-2: 22px;
+  --text-title-2--line-height: 28px;
+  --text-title-3: 20px;
+  --text-title-3--line-height: 25px;
+  --text-headline: 17px;
+  --text-headline--line-height: 22px;
+  --text-body: 17px;
+  --text-body--line-height: 22px;
+  --text-callout: 16px;
+  --text-callout--line-height: 21px;
+  --text-subhead: 15px;
+  --text-subhead--line-height: 20px;
+  --text-footnote: 13px;
+  --text-footnote--line-height: 18px;
+  --text-caption: 12px;
+  --text-caption--line-height: 16px;
+
+  --ease-spring: var(--ds-ease-spring);
+  --ease-spring-gentle: var(--ds-ease-spring-gentle);
+}

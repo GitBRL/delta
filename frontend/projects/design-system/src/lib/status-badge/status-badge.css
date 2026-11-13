@@ -1,0 +1,47 @@
+:host {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 10px 3px 8px;
+  border-radius: var(--ds-radius-full);
+  background: color-mix(in oklch, var(--status-color) 14%, transparent);
+  color: var(--status-color);
+  font: var(--ds-text-footnote);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.dot {
+  position: relative;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--status-color);
+}
+
+/* Pulso: halo que cresce e some — só transform/opacity. */
+:host(.pulses) .dot::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: var(--status-color);
+  animation: pulse 1.8s var(--ds-ease-out) infinite;
+}
+
+@keyframes pulse {
+  from {
+    opacity: 0.55;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(2.6);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :host(.pulses) .dot::after {
+    animation: none;
+  }
+}

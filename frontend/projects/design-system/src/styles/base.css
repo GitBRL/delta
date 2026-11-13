@@ -1,0 +1,150 @@
+/*
+ * Delta Design System — base global
+ * Importar depois de tokens.css (e depois do Tailwind, quando usado).
+ */
+
+html {
+  background: var(--ds-bg);
+  color: var(--ds-text);
+  font: var(--ds-text-body);
+  font-size: 100%;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  font-feature-settings: 'cv11', 'ss01';
+}
+
+body {
+  margin: 0;
+  min-height: 100dvh;
+  background: var(--ds-bg);
+  color: var(--ds-text);
+  font: var(--ds-text-subhead);
+}
+
+::selection {
+  background: var(--ds-accent-soft);
+}
+
+:focus-visible {
+  outline: 3px solid var(--ds-focus-ring);
+  outline-offset: 2px;
+  border-radius: var(--ds-radius-sm);
+}
+
+.ds-tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+.ds-visually-hidden {
+  position: absolute !important;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ---------- Material: Liquid Glass ----------
+ * .ds-glass          regular: painéis, barras e cartões
+ * .ds-glass-strong   menus, popovers e avisos (mais contraste para o texto)
+ * .ds-glass-clear    controles pequenos sobre outro vidro
+ * .ds-glass-tinted   vidro tingido com a cor de destaque (ação principal, seleção)
+ */
+.ds-glass,
+.ds-glass-strong,
+.ds-glass-clear,
+.ds-glass-tinted {
+  background: var(--ds-glass-sheen), var(--ds-glass-surface, var(--ds-glass-bg));
+  border: 1px solid var(--ds-glass-border);
+  box-shadow: var(--ds-glass-elevation, var(--ds-shadow-2)), var(--ds-glass-rim);
+  backdrop-filter: var(--ds-glass-filter);
+  -webkit-backdrop-filter: var(--ds-glass-filter);
+}
+
+.ds-glass-strong {
+  --ds-glass-surface: var(--ds-glass-bg-strong);
+  --ds-glass-elevation: var(--ds-shadow-3);
+}
+
+.ds-glass-clear {
+  --ds-glass-surface: var(--ds-glass-bg-clear);
+  --ds-glass-elevation: var(--ds-shadow-1);
+}
+
+.ds-glass-tinted {
+  --ds-glass-surface: color-mix(in oklch, var(--ds-accent) 22%, var(--ds-glass-bg));
+  border-color: color-mix(in oklch, var(--ds-accent) 30%, var(--ds-glass-border));
+}
+
+/* ---------- Entradas/saídas para animate.enter / animate.leave ---------- */
+.ds-enter-fade-up {
+  animation: ds-fade-up var(--ds-duration-slow) var(--ds-ease-spring-gentle) both;
+}
+
+.ds-enter-scale {
+  animation: ds-scale-in var(--ds-duration-slow) var(--ds-ease-spring) both;
+}
+
+.ds-leave-fade {
+  animation: ds-fade-out var(--ds-duration-fast) var(--ds-ease-in) both;
+}
+
+@keyframes ds-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes ds-scale-in {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes ds-fade-out {
+  to {
+    opacity: 0;
+    transform: scale(0.98);
+  }
+}
+
+/* ---------- Transições de rota (View Transitions API) ---------- */
+::view-transition-old(root) {
+  animation: ds-fade-out var(--ds-duration-fast) var(--ds-ease-in) both;
+}
+
+::view-transition-new(root) {
+  animation: ds-fade-up var(--ds-duration-slow) var(--ds-ease-spring-gentle) both;
+}
+
+/* ---------- Movimento reduzido: desliga o que não é essencial ---------- */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none !important;
+  }
+}

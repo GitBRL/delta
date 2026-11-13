@@ -1,0 +1,273 @@
+<header class="head">
+  <div class="min-w-0">
+    <a class="back" routerLink="/envios">‹ Envios</a>
+    <h1 class="m-0 mt-1 truncate text-large-title font-bold tracking-tight">
+      {{ creating() ? 'Novo envio' : (current()?.name ?? 'Envio') }}
+    </h1>
+    @if (current(); as a) {
+      <p class="m-0 mt-1 text-footnote text-fg-muted">
+        {{ a.active ? a.schedule_label : 'Pausado' }}
+        @if (a.active && a.next_run_at) { · próximo {{ relativeTime(a.next_run_at) }} }
+        · {{ a.project?.name }}
+      </p>
+    }
+  </div>
+  <div class="head-actions">
+    @if (dirty()) {
+      <span class="dirty" role="status">Alterações não salvas</span>
+    }
+    @if (!creating()) {
+      @if (confirmRun()) {
+        <span class="text-footnote">
+          {{ current()?.requires_approval ? 'Publicar agora e deixar para aprovação?' : 'Enviar agora para ' + draft().recipient_ids.length + ' contato(s)?' }}
+        </span>
+        <button ds-button variant="ghost" size="sm" (click)="confirmRun.set(false)">Não</button>
+        <button ds-button size="sm" [loading]="runningNow()" (click)="runNow()">Confirmar</button>
+      } @else {
+        <button ds-button variant="secondary" size="sm" [disabled]="!current()" (click)="askRunNow()">Enviar agora</button>
+      }
+    }
+    <button ds-button size="sm" [loading]="saving()" (click)="save()">{{ creating() ? 'Criar envio' : 'Salvar' }}</button>
+  </div>
+</header>
+
+@if (!creating()) {
+  <div class="tabs" role="tablist">
+    <button type="button" role="tab" [attr.aria-selected]="tab() === 'config'" (click)="setTab('config')">Configuração</button>
+    <button type="button" role="tab" [attr.aria-selected]="tab() === 'history'" (click)="setTab('history')">Histórico</button>
+  </div>
+}
+
+@if (!creating() && automation.isLoading() && !automation.hasValue()) {
+  <ds-glass-card padding="lg"><ds-skeleton width="50%" /><ds-skeleton width="70%" /></ds-glass-card>
+} @else if (!creating() && automation.error()) {
+  <ds-glass-card padding="lg" role="alert">
+    <p class="m-0 text-headline">Não foi possível abrir este envio.</p>
+    <a ds-button variant="secondary" size="sm" class="mt-3" routerLink="/envios">Voltar aos envios</a>
+  </ds-glass-card>
+} @else if (tab() === 'history' && id()) {
+  <ds-glass-card padding="lg">
+    <app-run-history [automationId]="id()!" />
+  </ds-glass-card>
+} @else {
+  <div class="layout">
+    <form class="form" (submit)="$event.preventDefault(); save()" novalidate>
+      <ds-glass-card padding="lg">
+        <h2 class="section-title">O quê</h2>
+        <ds-text-field
+          label="Nome do envio"
+          name="automation_name"
+          placeholder="Ex.: Resumo semanal da padaria"
+          [ngModel]="draft().name"
+          (ngModelChange)="patch({ name: $event })"
+          [error]="errors()['name'] ?? null"
+          [maxlength]="120"
+        />
+
+        @if (creating()) {
+          <label class="field">
+            <span class="label">Relatório</span>
+            <select name="report_id" [value]="draft().report_id" (change)="setReport(value($event))" [attr.aria-invalid]="errors()['report_id'] ? 'true' : null">
+              <option value="" [selected]="!draft().report_id">Escolha o relatório…</option>
+              @for (r of reportList(); track r.id) {
+                <option [value]="r.id" [selected]="r.id === draft().report_id">{{ r.project?.name ?? '—' }} · {{ r.title }}</option>
+              }
+            </select>
+            @if (errors()['report_id']; as e) {
+              <span class="error" role="alert">{{ e }}</span>
+            } @else if (reports.hasValue() && reportList().length === 0) {
+              <span class="hint">Nenhum relatório ainda. <a routerLink="/relatorios">Crie um relatório</a> a partir de um modelo.</span>
+            } @else {
+              <span class="hint">Cada envio publica uma versão nova deste relatório, no período escolhido abaixo.</span>
+            }
+          </label>
+        } @else if (current(); as a) {
+          <p class="fixed">
+            <span class="label">Relatório</span>
+            <strong>{{ a.report?.title ?? 'Relatório removido' }}</strong>
+            @if (a.report) {
+              <a [routerLink]="['/relatorios', a.report.id]">Abrir no montador</a>
+            }
+          </p>
+        }
+
+        <fieldset class="field" [attr.aria-invalid]="errors()['channels'] ? 'true' : null">
+          <legend class="label">Canais</legend>
+          <div class="channels">
+            <label class="toggle-card" [class.on]="draft().channels.includes('email')">
+              <input type="checkbox" name="channel_email" [checked]="draft().channels.includes('email')" (change)="toggleChannel('email', checked($event))" />
+              <span><strong>E-mail</strong><small>Com botão para o relatório e PDF anexo</small></span>
+            </label>
+            <label class="toggle-card" [class.on]="draft().channels.includes('whatsapp')">
+              <input type="checkbox" name="channel_whatsapp" [checked]="draft().channels.includes('whatsapp')" (change)="toggleChannel('whatsapp', checked($event))" />
+              <span><strong>WhatsApp</strong><small>Resumo com os KPIs e o link</small></span>
+            </label>
+          </div>
+          @if (errors()['channels']; as e) {
+            <span class="error" role="alert">{{ e }}</span>
+          }
+          @if (draft().channels.includes('whatsapp')) {
+            @if (whatsappMode() === 'sandbox') {
+              <p class="note" data-whatsapp="sandbox">
+                O WhatsApp da agência está em <strong>demonstração</strong>: nada sai do Delta (entregue e lido são simulados).
+                <a routerLink="/integracoes/whatsapp">Configurar o número oficial</a>
+              </p>
+            } @else if (!tenant.isAdmin()) {
+              <p class="note">O número de WhatsApp é configurado por um dono ou administrador da agência.</p>
+            }
+          }
+        </fieldset>
+      </ds-glass-card>
+
+      <ds-glass-card padding="lg">
+        <h2 class="section-title">Quando</h2>
+        <div class="segmented" role="radiogroup" aria-label="Frequência">
+          @for (f of frequencies; track f.value) {
+            <button type="button" role="radio" [attr.aria-checked]="draft().frequency === f.value" [class.on]="draft().frequency === f.value" (click)="setFrequency(f.value)">
+              {{ f.label }}
+            </button>
+          }
+        </div>
+        <div class="grid-3">
+          @if (draft().frequency === 'weekly' || draft().frequency === 'biweekly') {
+            <label class="field">
+              <span class="label">Dia da semana</span>
+              <select name="weekday" (change)="patch({ weekday: +value($event) })">
+                @for (w of weekdays; track w.value) {
+                  <option [value]="w.value" [selected]="w.value === draft().weekday">{{ w.label }}</option>
+                }
+              </select>
+            </label>
+          }
+          @if (draft().frequency === 'monthly') {
+            <label class="field">
+              <span class="label">Dia do mês</span>
+              <select name="month_day" (change)="patch({ month_day: +value($event) })">
+                @for (d of monthDays; track d) {
+                  <option [value]="d" [selected]="d === draft().month_day">Dia {{ d }}</option>
+                }
+              </select>
+            </label>
+          }
+          <label class="field">
+            <span class="label">Horário</span>
+            <input type="time" name="send_time" [value]="draft().send_time" (change)="patch({ send_time: value($event) })" [attr.aria-invalid]="errors()['send_time'] ? 'true' : null" />
+            @if (errors()['send_time']; as e) {
+              <span class="error" role="alert">{{ e }}</span>
+            }
+          </label>
+          <label class="field">
+            <span class="label">Período do relatório</span>
+            <select name="period_preset" (change)="setPeriod($any(value($event)))">
+              @for (p of periods; track p.value) {
+                <option [value]="p.value" [selected]="p.value === draft().period_preset">{{ p.label }}</option>
+              }
+            </select>
+          </label>
+        </div>
+        <p class="hint">No fuso da agência. Os dados vão até ontem.</p>
+      </ds-glass-card>
+
+      <ds-glass-card padding="lg">
+        <div class="section-head">
+          <h2 class="section-title">Para quem</h2>
+          @if (projectId(); as pid) {
+            <a class="small-link" [routerLink]="['/projetos', pid]">Cadastrar contato</a>
+          }
+        </div>
+        @if (!projectId()) {
+          <p class="hint">Escolha o relatório para ver os contatos do cliente.</p>
+        } @else if (contacts.isLoading() && !contacts.hasValue()) {
+          <ds-skeleton width="60%" />
+        } @else if (contactList().length === 0) {
+          <p class="hint">Este cliente ainda não tem contatos. Cadastre na página do projeto, com o consentimento de cada um.</p>
+        } @else {
+          <ul class="recipients" [attr.aria-invalid]="errors()['recipient_ids'] ? 'true' : null">
+            @for (c of contactList(); track c.id) {
+              @let blocker = recipientBlocker(c, draft().channels);
+              @let selected = draft().recipient_ids.includes(c.id);
+              <li>
+                <label class="recipient" [class.disabled]="!!blocker && !selected" [attr.data-recipient]="c.id">
+                  <input
+                    type="checkbox"
+                    [checked]="selected"
+                    [disabled]="!!blocker && !selected"
+                    (change)="toggleRecipient(c, checked($event))"
+                  />
+                  <span class="min-w-0">
+                    <strong>{{ c.name }}</strong>
+                    <small>{{ c.email ?? '' }}{{ c.email && c.phone_display ? ' · ' : '' }}{{ c.phone_display ?? '' }}</small>
+                    @if (blocker) {
+                      <small class="reason">{{ blocker }}</small>
+                    } @else if (receivingChannels(c, draft().channels).length < draft().channels.length) {
+                      <small class="reason">Recebe só por {{ receivingChannels(c, draft().channels)[0] === 'email' ? 'e-mail' : 'WhatsApp' }}</small>
+                    }
+                  </span>
+                </label>
+              </li>
+            }
+          </ul>
+        }
+        @if (errors()['recipient_ids']; as e) {
+          <span class="error" role="alert">{{ e }}</span>
+        }
+      </ds-glass-card>
+
+      <ds-glass-card padding="lg">
+        <h2 class="section-title">Mensagem</h2>
+        <div class="variables" aria-label="Variáveis">
+          @for (v of variables; track v.key) {
+            <button type="button" class="var-chip" [title]="v.hint" (click)="insert(v.key)">{{ token(v.key) }}</button>
+          }
+        </div>
+        <label class="field">
+          <span class="ds-visually-hidden">Mensagem</span>
+          <textarea
+            #messageBox
+            name="message"
+            rows="8"
+            [attr.maxlength]="messageMax"
+            [value]="draft().message"
+            (input)="patch({ message: value($event) })"
+            [attr.aria-invalid]="errors()['message'] ? 'true' : null"
+          ></textarea>
+          <span class="counter">{{ draft().message.length }} / {{ messageMax }}</span>
+          @if (errors()['message']; as e) {
+            <span class="error" role="alert">{{ e }}</span>
+          }
+        </label>
+      </ds-glass-card>
+
+      <ds-glass-card padding="lg">
+        <h2 class="section-title">Opções</h2>
+        <label class="check">
+          <input type="checkbox" name="attach_pdf" [checked]="draft().attach_pdf" (change)="patch({ attach_pdf: checked($event) })" />
+          <span><strong>Anexar o PDF no e-mail</strong><small>O link para o relatório interativo vai sempre.</small></span>
+        </label>
+        <label class="check">
+          <input type="checkbox" name="requires_approval" [checked]="draft().requires_approval" (change)="patch({ requires_approval: checked($event) })" />
+          <span><strong>Revisar antes de enviar</strong><small>O Delta publica a versão e espera a sua aprovação para mandar.</small></span>
+        </label>
+        <label class="check">
+          <input type="checkbox" name="active" [checked]="draft().active" (change)="patch({ active: checked($event) })" />
+          <span><strong>Ativo</strong><small>Desmarque para pausar sem perder a configuração.</small></span>
+        </label>
+      </ds-glass-card>
+    </form>
+
+    <aside class="preview" aria-label="Prévia">
+      <ds-glass-card padding="lg">
+        <h2 class="section-title">Prévia</h2>
+        <p class="hint mb-3">Com os números atuais{{ draft().recipient_ids.length ? ' e o primeiro contato escolhido' : '' }}.</p>
+        <app-message-preview
+          [preview]="preview()"
+          [loading]="previewLoading()"
+          [error]="previewError()"
+          [channels]="draft().channels"
+          [attachPdf]="draft().attach_pdf"
+          [whatsappMode]="whatsappMode()"
+        />
+      </ds-glass-card>
+    </aside>
+  </div>
+}

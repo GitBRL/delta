@@ -1,0 +1,210 @@
+.back {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: var(--ds-space-4);
+  color: var(--ds-text-secondary);
+  font: var(--ds-text-footnote);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.back:hover {
+  color: var(--ds-accent);
+}
+
+.apps {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 420px), 1fr));
+  align-items: start;
+  gap: var(--ds-space-5);
+}
+
+.app-skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-3);
+  padding: var(--ds-space-6);
+  border-radius: var(--ds-radius-lg);
+}
+
+.app-card {
+  scroll-margin-top: var(--ds-space-6);
+  transition: box-shadow var(--ds-duration-base) var(--ds-ease-out);
+}
+
+/* Card aberto pelo link de Integrações: um halo que some sozinho. */
+.app-card.is-target {
+  box-shadow:
+    0 0 0 2px color-mix(in oklch, var(--ds-accent) 60%, transparent),
+    0 0 32px color-mix(in oklch, var(--ds-accent) 30%, transparent);
+}
+
+.app-head {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-3);
+}
+
+.vendor-icon {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 44px;
+  height: 44px;
+  border-radius: var(--ds-radius-md);
+  background: var(--ds-accent-soft);
+  color: var(--ds-accent);
+}
+
+.chip {
+  flex: none;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: var(--ds-fill);
+  color: var(--ds-text-secondary);
+  font: var(--ds-text-caption);
+  font-weight: 600;
+}
+
+.meta-line {
+  margin: var(--ds-space-3) 0 0;
+  font: var(--ds-text-footnote);
+  color: var(--ds-text-secondary);
+}
+
+/* ---------- Passo a passo ---------- */
+.guide {
+  margin-top: var(--ds-space-4);
+  padding: var(--ds-space-3) var(--ds-space-4);
+  border-radius: var(--ds-radius-md);
+  background: var(--ds-fill);
+}
+
+.guide summary {
+  cursor: pointer;
+  font: var(--ds-text-subhead);
+  font-weight: 600;
+  color: var(--ds-text);
+}
+
+.guide summary:focus-visible {
+  outline: 2px solid var(--ds-accent);
+  outline-offset: 4px;
+  border-radius: 4px;
+}
+
+.steps {
+  margin: var(--ds-space-3) 0 var(--ds-space-3);
+  padding-left: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font: var(--ds-text-footnote);
+  color: var(--ds-text-secondary);
+}
+
+.console-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--ds-accent);
+  font: var(--ds-text-footnote);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.console-link:hover {
+  text-decoration: underline;
+}
+
+/* ---------- Endereços de retorno ---------- */
+.uris {
+  margin-top: var(--ds-space-4);
+}
+
+.uris-title {
+  margin: 0 0 var(--ds-space-2);
+  font: var(--ds-text-caption);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--ds-text-tertiary);
+}
+
+.uri {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-2);
+  padding: 4px 4px 4px 12px;
+  border-radius: var(--ds-radius-sm);
+  background: var(--ds-bg-elevated);
+  box-shadow: var(--ds-shadow-1);
+}
+
+.uri + .uri {
+  margin-top: 6px;
+}
+
+.uri code {
+  flex: 1;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  font-family: var(--ds-font-mono);
+  font-size: 12px;
+  color: var(--ds-text);
+}
+
+/* ---------- Formulário ---------- */
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-4);
+  margin-top: var(--ds-space-5);
+}
+
+.result {
+  margin: 0;
+  padding: 8px 12px;
+  border-radius: var(--ds-radius-sm);
+  background: var(--ds-fill);
+  font: var(--ds-text-footnote);
+  color: var(--ds-text-secondary);
+}
+
+.result.is-ok {
+  color: var(--ds-status-healthy);
+  background: color-mix(in oklch, var(--ds-status-healthy) 12%, transparent);
+}
+
+.result.is-error {
+  color: var(--ds-status-critical);
+  background: color-mix(in oklch, var(--ds-status-critical) 12%, transparent);
+}
+
+.app-head + .result,
+.meta-line + .result {
+  margin-top: var(--ds-space-3);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--ds-space-2);
+}
+
+.confirm-text {
+  flex-basis: 100%;
+  font: var(--ds-text-footnote);
+  color: var(--ds-text-secondary);
+}
+
+.state {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--ds-space-2);
+  padding: var(--ds-space-6);
+  border-radius: var(--ds-radius-lg);
+}

@@ -1,0 +1,84 @@
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-4);
+}
+
+.remember {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-2);
+  font: var(--ds-text-footnote);
+  color: var(--ds-text-secondary);
+  cursor: pointer;
+}
+
+.remember input {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--ds-accent);
+}
+
+.general-error {
+  margin: 0;
+  padding: var(--ds-space-3) var(--ds-space-4);
+  border-radius: var(--ds-radius-md);
+  background: color-mix(in oklch, var(--ds-status-critical) 12%, transparent);
+  color: var(--ds-status-critical);
+  font: var(--ds-text-footnote);
+  font-weight: 600;
+}
+
+.switch {
+  margin: var(--ds-space-6) 0 0;
+  text-align: center;
+  font: var(--ds-text-footnote);
+  color: var(--ds-text-secondary);
+}
+
+.switch a {
+  color: var(--ds-accent);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.switch a:hover {
+  text-decoration: underline;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--ds-space-3);
+}
+
+@media (max-width: 480px) {
+  .row {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Login com passkey */
+.or {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-3);
+  margin: var(--ds-space-5) 0 var(--ds-space-4);
+  font: var(--ds-text-caption);
+  color: var(--ds-text-tertiary);
+}
+
+.or::before,
+.or::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--ds-separator);
+}
+
+.passkey-hint {
+  margin: var(--ds-space-2) 0 0;
+  text-align: center;
+  font: var(--ds-text-caption);
+  color: var(--ds-text-tertiary);
+}

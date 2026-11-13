@@ -1,0 +1,158 @@
+<header class="head">
+  <div>
+    <p class="m-0 text-footnote font-semibold uppercase tracking-wider text-fg-subtle">{{ tenant.current()?.name }}</p>
+    <h1 class="m-0 mt-1 text-large-title font-bold tracking-tight">Relatórios</h1>
+    <p class="m-0 mt-2 max-w-2xl text-subhead text-fg-muted">
+      Monte o relatório com os números do período, escreva a análise e publique: a versão publicada vira PDF e link
+      para o cliente.
+    </p>
+  </div>
+  @if (canManage()) {
+    <button ds-button (click)="openNew()">
+      <svg lucidePlus [size]="16"></svg>
+      Novo relatório
+    </button>
+  }
+</header>
+
+@if (!canManage()) {
+  <div class="state ds-glass">
+    <p class="m-0 text-headline">Os relatórios publicados ficam na página de cada projeto</p>
+    <p class="m-0 text-footnote text-fg-muted">O montador é usado pela equipe da agência.</p>
+    <a ds-button variant="secondary" size="sm" routerLink="/projetos">Ver projetos</a>
+  </div>
+} @else {
+  @if (creatingOpen()) {
+    <ds-glass-card padding="lg" class="new" animate.enter="ds-enter-fade-up">
+      <form class="new-form" aria-label="Novo relatório" (submit)="$event.preventDefault(); create()">
+        <div class="new-head">
+          <h2 class="m-0 text-title-3 font-semibold">Novo relatório</h2>
+          <button type="button" class="close" aria-label="Fechar" (click)="creatingOpen.set(false)">
+            <svg lucideX [size]="16"></svg>
+          </button>
+        </div>
+
+        <label class="field">
+          <span>Projeto</span>
+          <select name="report_project" (change)="projectId.set($any($event.target).value)">
+            <option value="" [selected]="!projectId()">Escolha o projeto…</option>
+            @for (p of projectList(); track p.id) {
+              <option [value]="p.id" [selected]="p.id === projectId()">{{ p.name }}</option>
+            }
+          </select>
+          @if (errors()['project_id']; as e) {
+            <small class="error" role="alert">{{ e }}</small>
+          }
+        </label>
+
+        <fieldset class="templates">
+          <legend>Modelo</legend>
+          @for (t of templateList(); track t.key) {
+            <label class="template" [class.is-checked]="template() === t.key" [attr.data-template]="t.key">
+              <input type="radio" name="report_template" [value]="t.key" [checked]="template() === t.key" (change)="template.set(t.key)" />
+              <span class="template-name">
+                {{ t.name }}
+                @if (t.key === suggested() && selectedProject()) {
+                  <span class="suggested">sugerido para {{ nicheLabel(selectedProject()!.niche) }}</span>
+                }
+              </span>
+              <span class="template-desc">{{ t.description }}</span>
+            </label>
+          }
+        </fieldset>
+
+        <label class="field">
+          <span>Título</span>
+          <input name="report_title" maxlength="120" [value]="title()" (input)="setTitle($any($event.target).value)" />
+          @if (errors()['title']; as e) {
+            <small class="error" role="alert">{{ e }}</small>
+          }
+        </label>
+
+        <div class="field">
+          <span>Período</span>
+          <app-period-picker
+            [(preset)]="preset"
+            [(custom)]="custom"
+            [(compare)]="compare"
+            [error]="rangeError() ?? errors()['period'] ?? errors()['period_end'] ?? errors()['period_preset'] ?? null"
+          />
+          <small class="hint">Períodos como “Mês passado” são recalculados a cada publicação.</small>
+        </div>
+
+        <div class="actions">
+          <button ds-button type="submit" [loading]="creating()">Criar e editar</button>
+          <button ds-button type="button" variant="ghost" (click)="creatingOpen.set(false)">Cancelar</button>
+        </div>
+      </form>
+    </ds-glass-card>
+  }
+
+  <div class="filter">
+    <label class="field inline">
+      <span>Projeto</span>
+      <select name="filter_project" (change)="projectFilter.set($any($event.target).value)">
+        <option value="">Todos</option>
+        @for (p of projectList(); track p.id) {
+          <option [value]="p.id" [selected]="p.id === projectFilter()">{{ p.name }}</option>
+        }
+      </select>
+    </label>
+  </div>
+
+  @if (reports.isLoading() && !reports.hasValue()) {
+    <div class="group" aria-busy="true">
+      <ds-skeleton width="30%" height="18px" />
+      <ds-skeleton height="64px" radius="var(--ds-radius-lg)" />
+    </div>
+  } @else if (reports.error()) {
+    <div class="state ds-glass" role="alert">
+      <p class="m-0 text-headline">Não foi possível carregar os relatórios.</p>
+      <button ds-button variant="secondary" size="sm" (click)="reports.reload()">Tentar de novo</button>
+    </div>
+  } @else if (groups().length === 0) {
+    <div class="state ds-glass">
+      <span class="empty-icon" aria-hidden="true"><svg lucideFileText [size]="28"></svg></span>
+      <p class="m-0 text-headline">Nenhum relatório ainda</p>
+      <p class="m-0 text-footnote text-fg-muted">Comece por um modelo: o relatório já nasce com os canais do projeto.</p>
+      <button ds-button size="sm" (click)="openNew()">Novo relatório</button>
+    </div>
+  } @else {
+    @for (group of groups(); track group.project.id) {
+      <section class="group" [attr.aria-label]="group.project.name">
+        <h2 class="m-0 text-headline">
+          <a class="project-link" [routerLink]="['/projetos', group.project.id]">{{ group.project.name }}</a>
+        </h2>
+        <ul class="list">
+          @for (r of group.reports; track r.id) {
+            <li class="report ds-glass" [attr.data-report]="r.id" animate.enter="ds-enter-fade-up">
+              <a class="report-link" [routerLink]="['/relatorios', r.id]">
+                <span class="report-title">{{ r.title }}</span>
+                <span class="report-meta">
+                  {{ r.period_label ?? 'período sem dados ainda' }} ·
+                  @if (r.last_published_at) {
+                    publicado {{ relativeTime(r.last_published_at) }} · {{ r.versions }} {{ r.versions === 1 ? 'versão' : 'versões' }}
+                  } @else {
+                    nunca publicado
+                  }
+                </span>
+              </a>
+              <button
+                ds-button
+                size="sm"
+                [variant]="confirmingDelete() === r.id ? 'destructive' : 'ghost'"
+                [attr.aria-label]="confirmingDelete() === r.id ? 'Confirmar exclusão de ' + r.title : 'Excluir ' + r.title"
+                (click)="remove(r)"
+              >
+                <svg lucideTrash2 [size]="14"></svg>
+                @if (confirmingDelete() === r.id) {
+                  Excluir mesmo?
+                }
+              </button>
+            </li>
+          }
+        </ul>
+      </section>
+    }
+  }
+}

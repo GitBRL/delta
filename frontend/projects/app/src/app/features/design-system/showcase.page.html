@@ -1,0 +1,273 @@
+<header class="topbar ds-glass">
+  <app-delta-logo [size]="26" />
+  <span class="title">Design System</span>
+  <span class="spacer"></span>
+  <a ds-button variant="ghost" size="sm" routerLink="/overview">Ir para o app</a>
+  <ds-theme-toggle />
+</header>
+
+<main class="page">
+  <section class="intro">
+    <h1>Delta Design System</h1>
+    <p>
+      Inspirado no Human Interface Guidelines, na direção do Liquid Glass: navegação e controles são
+      de vidro (translúcido, com brilho nas bordas e formas em cápsula) e flutuam sobre o conteúdo;
+      movimento com mola. Só
+      <code>transform</code> e <code>opacity</code> são animados; com “reduzir movimento” ativo, as
+      animações não essenciais desligam.
+    </p>
+  </section>
+
+  <!-- Cores -->
+  <section class="block">
+    <h2>Cores</h2>
+    <div class="swatches">
+      @for (c of colorTokens; track c.name) {
+        <div class="swatch">
+          <span class="chip" [style.background]="'var(' + c.name + ')'"></span>
+          <strong>{{ c.label }}</strong>
+          <code>{{ c.name }}</code>
+        </div>
+      }
+    </div>
+    <h3>Cor de destaque (white label)</h3>
+    <div class="row">
+      @for (a of accents; track a.label) {
+        <button ds-button variant="secondary" size="sm" (click)="theme.setAccent(a.value)">
+          {{ a.label }}
+        </button>
+      }
+    </div>
+  </section>
+
+  <!-- Materiais -->
+  <section class="block">
+    <h2>Materiais · Liquid Glass</h2>
+    <div class="materials">
+      <div class="material ds-glass">
+        <strong>Regular</strong>
+        <span>Painéis, barras e cartões.</span>
+        <code>.ds-glass</code>
+      </div>
+      <div class="material ds-glass-strong">
+        <strong>Strong</strong>
+        <span>Menus e avisos: mais contraste para o texto.</span>
+        <code>.ds-glass-strong</code>
+      </div>
+      <div class="material ds-glass-clear">
+        <strong>Clear</strong>
+        <span>Controles pequenos sobre outro vidro.</span>
+        <code>.ds-glass-clear</code>
+      </div>
+      <div class="material ds-glass-tinted">
+        <strong>Tinted</strong>
+        <span>Ação principal e seleção, na cor de destaque.</span>
+        <code>.ds-glass-tinted</code>
+      </div>
+    </div>
+  </section>
+
+  <!-- Tipografia -->
+  <section class="block">
+    <h2>Tipografia</h2>
+    <div class="type">
+      @for (t of typeScale; track t.token) {
+        <p [style.font]="'var(' + t.token + ')'">
+          {{ t.label }} — Relatório semanal da Padaria Aurora
+        </p>
+      }
+    </div>
+  </section>
+
+  <!-- Botões -->
+  <section class="block">
+    <h2>Botões</h2>
+    <div class="row">
+      <button ds-button>Primário</button>
+      <button ds-button variant="secondary">Secundário</button>
+      <button ds-button variant="ghost">Ghost</button>
+      <button ds-button variant="destructive">Destrutivo</button>
+      <button ds-button disabled>Desabilitado</button>
+    </div>
+    <div class="row">
+      <button ds-button size="sm">Pequeno</button>
+      <button ds-button size="md">Médio</button>
+      <button ds-button size="lg">Grande</button>
+      <button
+        ds-button
+        [loading]="loadingDemo()"
+        [disabled]="loadingDemo()"
+        (click)="simulateLoading()"
+      >
+        {{ loadingDemo() ? 'Enviando…' : 'Simular carregamento' }}
+      </button>
+    </div>
+  </section>
+
+  <!-- Campos -->
+  <section class="block">
+    <h2>Campos</h2>
+    <div class="grid-2">
+      <ds-text-field
+        label="E-mail"
+        type="email"
+        placeholder="voce@agencia.com"
+        [formControl]="email"
+        [error]="emailError()"
+      />
+      <ds-text-field
+        label="Com dica"
+        placeholder="Digite algo"
+        hint="Texto de apoio abaixo do campo."
+      />
+      <ds-text-field label="Com erro" error="Este campo tem um erro do servidor." />
+    </div>
+  </section>
+
+  <!-- Vidro -->
+  <section class="block">
+    <h2>Cartões de vidro</h2>
+    <div class="grid-2">
+      <ds-glass-card [interactive]="true">
+        <h3 class="card-title">Interativo</h3>
+        <p class="muted">Passe o cursor: o brilho acompanha e o cartão inclina levemente.</p>
+      </ds-glass-card>
+      <ds-glass-card>
+        <h3 class="card-title">Estático</h3>
+        <p class="muted">Material translúcido com desfoque e saturação do fundo.</p>
+      </ds-glass-card>
+    </div>
+  </section>
+
+  <!-- KPIs -->
+  <section class="block">
+    <h2>Indicadores (KPI)</h2>
+    <div class="grid-4">
+      <ds-kpi-tile
+        label="Investimento"
+        [value]="kpiValue()"
+        format="currency"
+        [trend]="0.08"
+        status="healthy"
+      />
+      <ds-kpi-tile label="Alcance" [value]="48200" format="compact" [trend]="0.23" />
+      <ds-kpi-tile
+        label="CPA"
+        [value]="9.39"
+        format="currency"
+        [trend]="-0.06"
+        direction="down-is-good"
+        status="healthy"
+      />
+      <ds-kpi-tile
+        label="Frequência"
+        [value]="3.6"
+        format="decimal"
+        [trend]="0.002"
+        status="attention"
+        hint="Acima de 3 em 7 dias"
+      />
+    </div>
+    <div class="row">
+      <button ds-button variant="secondary" size="sm" (click)="randomizeKpi()">
+        Novo valor de investimento
+      </button>
+    </div>
+  </section>
+
+  <!-- Gráfico de área -->
+  <section class="block">
+    <h2>Gráfico de área</h2>
+    <ds-glass-card padding="lg">
+      <ds-area-chart
+        label="Investimento diário"
+        [series]="chartSeries()"
+        [comparison]="chartPrevious"
+        [valueFormatter]="currency"
+      />
+      <div class="row">
+        <button ds-button variant="secondary" size="sm" (click)="regenerateChart()">
+          Novos dados
+        </button>
+      </div>
+    </ds-glass-card>
+  </section>
+
+  <!-- Semáforo -->
+  <section class="block">
+    <h2>Semáforo de atenção</h2>
+    <div class="row">
+      @for (s of statuses; track s) {
+        <ds-status-badge [status]="s" />
+      }
+    </div>
+    <div class="row">
+      @for (s of statuses; track s) {
+        <ds-status-badge [status]="s" [compact]="true" />
+      }
+      <ds-status-badge status="critical" label="CPA 20% acima da meta" />
+    </div>
+  </section>
+
+  <!-- Anéis -->
+  <section class="block">
+    <h2>Anéis de saúde</h2>
+    <ds-glass-card>
+      @for (k of [ringsKey()]; track k) {
+        <ds-health-rings
+          [acquisition]="rings().acquisition"
+          [engagement]="rings().engagement"
+          [conversion]="rings().conversion"
+        />
+      }
+      <div class="row">
+        <button ds-button variant="secondary" size="sm" (click)="randomizeRings()">
+          Sortear valores
+        </button>
+      </div>
+    </ds-glass-card>
+  </section>
+
+  <!-- Skeleton -->
+  <section class="block">
+    <h2>Carregamento</h2>
+    <ds-glass-card>
+      <div class="stack">
+        <ds-skeleton width="40%" height="20px" />
+        <ds-skeleton width="90%" />
+        <ds-skeleton width="75%" />
+        <ds-skeleton width="120px" height="120px" radius="50%" />
+      </div>
+    </ds-glass-card>
+  </section>
+
+  <!-- Toasts -->
+  <section class="block">
+    <h2>Notificações</h2>
+    <div class="row">
+      <button
+        ds-button
+        variant="secondary"
+        (click)="
+          toast.success('Relatório enviado', { message: 'Entregue no WhatsApp de 2 contatos.' })
+        "
+      >
+        Sucesso
+      </button>
+      <button
+        ds-button
+        variant="secondary"
+        (click)="toast.error('Falha no envio', { message: 'Número sem opt-in registrado.' })"
+      >
+        Erro
+      </button>
+      <button
+        ds-button
+        variant="secondary"
+        (click)="toast.info('Sincronizando Meta Ads', { message: 'Isso leva alguns segundos.' })"
+      >
+        Informação
+      </button>
+    </div>
+  </section>
+</main>

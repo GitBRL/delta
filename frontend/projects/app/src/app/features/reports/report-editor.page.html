@@ -1,0 +1,342 @@
+<a class="back" routerLink="/relatorios">
+  <svg lucideArrowLeft [size]="16"></svg>
+  Relatórios
+</a>
+
+@if (notFound()) {
+  <div class="state ds-glass" role="alert">
+    <p class="m-0 text-headline">Relatório não encontrado</p>
+    <p class="m-0 text-footnote text-fg-muted">Ele pode ter sido excluído ou pertencer a outra agência.</p>
+  </div>
+} @else if (!canEdit()) {
+  <div class="state ds-glass">
+    <p class="m-0 text-headline">O montador é da equipe da agência</p>
+    <p class="m-0 text-footnote text-fg-muted">Os relatórios publicados ficam na página de cada projeto.</p>
+  </div>
+} @else if (!loaded()) {
+  <div class="loading" aria-busy="true">
+    <ds-skeleton width="40%" height="36px" />
+    <ds-skeleton width="70%" />
+    <ds-skeleton height="320px" radius="var(--ds-radius-xl)" />
+  </div>
+} @else {
+  <header class="topbar">
+    <div class="title-wrap">
+      @if (report.hasValue() && report.value().data.project; as project) {
+        <p class="m-0 text-footnote font-semibold uppercase tracking-wider text-fg-subtle">{{ project.name }}</p>
+      }
+      <label class="ds-visually-hidden" for="report-title">Título do relatório</label>
+      <input
+        id="report-title"
+        class="title-input"
+        name="report_title"
+        [attr.maxlength]="limits.reportTitle"
+        [value]="title()"
+        (input)="title.set($any($event.target).value)"
+        placeholder="Título do relatório"
+      />
+      @if (generalErrors()['title']; as e) {
+        <p class="field-error" role="alert">{{ e }}</p>
+      }
+    </div>
+
+    <div class="save-area">
+      @if (dirty()) {
+        <span class="save-state" data-state="dirty" role="status">
+          <ds-status-badge status="attention" [compact]="true" [pulse]="false" />
+          Alterações não salvas
+        </span>
+      } @else {
+        <span class="save-state" data-state="saved" role="status">
+          <ds-status-badge status="healthy" [compact]="true" [pulse]="false" />
+          Tudo salvo
+        </span>
+      }
+      <button
+        ds-button
+        variant="ghost"
+        [disabled]="!!rangeError()"
+        [attr.title]="rangeError() ? 'Escolha um período válido para a IA analisar.' : null"
+        (click)="aiOpen.set(true)"
+      >
+        <svg lucideSparkles [size]="16"></svg>
+        Escrever análise com IA
+      </button>
+      <button ds-button variant="secondary" [loading]="saving()" [disabled]="!dirty() || publishing()" title="Salvar (Ctrl+S)" (click)="save()">
+        Salvar
+      </button>
+      <button ds-button [loading]="publishing()" [disabled]="saving()" (click)="publish()">
+        Publicar
+      </button>
+    </div>
+  </header>
+
+  @if (aiOpen()) {
+    <app-ai-analysis-dialog
+      [reportId]="id()"
+      [body]="aiBody()"
+      [canConfigure]="tenant.isAdmin()"
+      (inserted)="insertAnalysis($event)"
+      (dismissed)="aiOpen.set(false)"
+    />
+  }
+
+  <div class="period">
+    <app-period-picker
+      [(preset)]="preset"
+      [(custom)]="custom"
+      [(compare)]="compare"
+      [error]="rangeError() ?? generalErrors()['period_end'] ?? generalErrors()['period_preset'] ?? generalErrors()['period'] ?? null"
+    />
+  </div>
+
+  <div class="workspace">
+    <!-- Estrutura -->
+    <aside class="structure ds-glass" aria-label="Estrutura do relatório">
+      <h2 class="panel-title">Estrutura</h2>
+      <ol class="sections">
+        @for (section of layout().sections; track section.id; let si = $index) {
+          <li class="section-item" [attr.data-section]="section.id">
+            <button
+              type="button"
+              class="row section-row"
+              [class.is-selected]="selectedId() === section.id"
+              [class.has-error]="!!errorFor(section.id) || !!problems()[section.id]"
+              (click)="select(section.id)"
+            >
+              <span class="row-title">{{ section.title || 'Seção sem título' }}</span>
+              <span class="row-meta">{{ section.blocks.length }}</span>
+            </button>
+            <ol class="blocks">
+              @for (block of section.blocks; track block.id) {
+                <li>
+                  <button
+                    type="button"
+                    class="row block-row"
+                    [attr.data-block]="block.id"
+                    [class.is-selected]="selectedId() === block.id"
+                    [class.has-error]="!!errorFor(block.id)"
+                    [class.is-incomplete]="!!problems()[block.id]"
+                    (click)="select(block.id)"
+                  >
+                    <span class="row-icon" aria-hidden="true">
+                      @switch (block.type) {
+                        @case ('kpis') { <svg lucideLayoutDashboard [size]="14"></svg> }
+                        @case ('chart') { <svg lucideChartLine [size]="14"></svg> }
+                        @case ('table') { <svg lucideTable [size]="14"></svg> }
+                        @case ('text') { <svg lucideFileText [size]="14"></svg> }
+                        @case ('attention') { <svg lucideCircleExclamationPoint [size]="14"></svg> }
+                      }
+                    </span>
+                    <span class="row-text">
+                      <strong>{{ block.title || blockTypeLabel(block.type) }}</strong>
+                      <small>{{ blockSummary(block) }}</small>
+                    </span>
+                  </button>
+                  @if (errorFor(block.id); as e) {
+                    <p class="row-error" role="alert">{{ e }}</p>
+                  }
+                </li>
+              }
+            </ol>
+            @if (errorFor(section.id); as e) {
+              <p class="row-error" role="alert">{{ e }}</p>
+            }
+            @if (addingTo() === section.id) {
+              <div class="add-menu" role="menu" [attr.aria-label]="'Adicionar bloco em ' + section.title" animate.enter="ds-enter-fade-up">
+                @for (t of blockTypes; track t.type) {
+                  <button type="button" role="menuitem" class="add-option" [attr.data-type]="t.type" (click)="addBlock(section.id, t.type)">
+                    <strong>{{ t.label }}</strong>
+                    <small>{{ t.description }}</small>
+                  </button>
+                }
+                <button type="button" class="add-cancel" (click)="addingTo.set(null)">Cancelar</button>
+              </div>
+            } @else {
+              <button type="button" class="add-block" (click)="addingTo.set(section.id)" [attr.aria-label]="'Adicionar bloco em ' + section.title">
+                <svg lucidePlus [size]="14"></svg>
+                Bloco
+              </button>
+            }
+          </li>
+        }
+      </ol>
+      <button ds-button variant="secondary" size="sm" class="add-section" (click)="addSection()">
+        <svg lucidePlus [size]="14"></svg>
+        Seção
+      </button>
+    </aside>
+
+    <!-- Prévia / versões -->
+    <section class="canvas" aria-label="Relatório">
+      <div class="tabs" role="tablist">
+        <button type="button" role="tab" class="tab" [attr.aria-selected]="tab() === 'preview'" (click)="tab.set('preview')">Prévia</button>
+        <button type="button" role="tab" class="tab" [attr.aria-selected]="tab() === 'versions'" (click)="tab.set('versions')">Versões publicadas</button>
+        <button type="button" role="tab" class="tab" [attr.aria-selected]="tab() === 'live'" (click)="tab.set('live')">Dashboard ao vivo</button>
+        @if (tab() === 'preview') {
+          <span class="preview-state" role="status">
+            @if (previewLoading()) {
+              Atualizando prévia…
+            } @else if (preview()) {
+              Dados reais de {{ preview()!.period.label }}
+            }
+          </span>
+        }
+      </div>
+
+      @if (tab() === 'preview') {
+        @if (previewError()) {
+          <div class="state ds-glass" role="alert">
+            <p class="m-0 text-headline">{{ previewError() }}</p>
+          </div>
+        } @else if (rangeError()) {
+          <div class="state ds-glass">
+            <p class="m-0 text-headline">Ajuste o período para ver a prévia</p>
+            <p class="m-0 text-footnote text-fg-muted">{{ rangeError() }}</p>
+          </div>
+        }
+        @if (preview(); as data) {
+          <div class="preview" [class.is-stale]="previewLoading()">
+            <app-report-view
+              [data]="data"
+              [selectable]="true"
+              [selectedId]="selectedId()"
+              [pending]="pending()"
+              (blockSelect)="select($event)"
+            />
+          </div>
+        } @else if (!previewError() && !rangeError()) {
+          <div class="preview-skeleton" aria-busy="true">
+            <ds-skeleton height="160px" radius="var(--ds-radius-xl)" />
+            <ds-skeleton width="40%" height="20px" />
+            <ds-skeleton height="120px" radius="var(--ds-radius-lg)" />
+          </div>
+        }
+      } @else if (tab() === 'versions') {
+        <app-report-versions [reportId]="id()" [canManage]="canEdit()" />
+      } @else {
+        <app-live-links [reportId]="id()" [canManage]="canEdit()" />
+      }
+    </section>
+
+    <!-- Inspetor -->
+    <aside class="inspector ds-glass" aria-label="Propriedades">
+      @switch (selection()?.kind) {
+        @case ('block') {
+          @let sel = selection()!;
+          @if (sel.kind === 'block') {
+            @let block = sel.block;
+            <h2 class="panel-title">{{ blockTypeLabel(block.type) }}</h2>
+            <p class="m-0 text-caption text-fg-subtle">Em “{{ sel.section.title || 'Seção sem título' }}”</p>
+
+            @if (errorFor(block.id) ?? problems()[block.id]; as e) {
+              <p class="field-error" role="alert">{{ e }}</p>
+            }
+
+            <label class="field">
+              <span>Título do bloco (opcional)</span>
+              <input
+                name="block_title"
+                [attr.maxlength]="limits.title"
+                [value]="block.title ?? ''"
+                (input)="updateBlock(block.id, { title: $any($event.target).value })"
+              />
+            </label>
+
+            @switch (block.type) {
+              @case ('kpis') {
+                <app-metric-picker [options]="options()" [max]="limits.kpis" [selected]="metricsOf(block)" (selectedChange)="updateBlock(block.id, { metrics: $event })" />
+              }
+              @case ('table') {
+                <app-metric-picker [options]="options()" [max]="limits.table" [selected]="metricsOf(block)" (selectedChange)="updateBlock(block.id, { metrics: $event })" />
+              }
+              @case ('chart') {
+                <app-metric-picker [options]="options()" [single]="true" [selected]="metricsOf(block)" (selectedChange)="updateBlock(block.id, { metric: $event[0] ?? '' })" />
+              }
+              @case ('text') {
+                <label class="field">
+                  <span>Análise</span>
+                  <textarea
+                    name="block_content"
+                    rows="10"
+                    [value]="block.content"
+                    (input)="updateBlock(block.id, { content: $any($event.target).value })"
+                    placeholder="O que funcionou, o que mudou e os próximos passos."
+                  ></textarea>
+                </label>
+                <p class="hint">
+                  <code>**negrito**</code> · linhas começando com <code>- </code> viram lista · linha em branco separa parágrafos
+                </p>
+                <p class="counter" [class.over]="block.content.length > limits.text">{{ block.content.length }}/{{ limits.text }}</p>
+              }
+              @case ('attention') {
+                <label class="field">
+                  <span>Quantos sinais mostrar</span>
+                  <select name="block_limit" (change)="updateBlock(block.id, { limit: +$any($event.target).value })">
+                    @for (n of attentionLimits; track n) {
+                      <option [value]="n" [selected]="n === block.limit">{{ n }}</option>
+                    }
+                  </select>
+                </label>
+                <p class="hint">Os sinais do semáforo de atenção, do mais urgente para o menos, com a sugestão de cada um.</p>
+              }
+            }
+
+            <div class="inspector-actions">
+              <button ds-button variant="ghost" size="sm" [disabled]="!canMoveBlock(block.id, -1)" (click)="moveBlock(block.id, -1)">
+                ↑ Subir
+              </button>
+              <button ds-button variant="ghost" size="sm" [disabled]="!canMoveBlock(block.id, 1)" (click)="moveBlock(block.id, 1)">
+                ↓ Descer
+              </button>
+              <button ds-button [variant]="confirmingRemove() === block.id ? 'destructive' : 'ghost'" size="sm" (click)="remove(block.id)">
+                <svg lucideTrash2 [size]="14"></svg>
+                {{ confirmingRemove() === block.id ? 'Confirmar remoção' : 'Remover bloco' }}
+              </button>
+              @if (confirmingRemove() === block.id) {
+                <button ds-button variant="ghost" size="sm" (click)="confirmingRemove.set(null)">Cancelar</button>
+              }
+            </div>
+          }
+        }
+        @case ('section') {
+          @let sel = selection()!;
+          @if (sel.kind === 'section') {
+            @let section = sel.section;
+            <h2 class="panel-title">Seção</h2>
+            @if (errorFor(section.id) ?? problems()[section.id]; as e) {
+              <p class="field-error" role="alert">{{ e }}</p>
+            }
+            <label class="field">
+              <span>Título da seção</span>
+              <input name="section_title" [attr.maxlength]="limits.title" [value]="section.title" (input)="renameSection(section.id, $any($event.target).value)" />
+            </label>
+            <p class="hint">{{ section.blocks.length }} {{ section.blocks.length === 1 ? 'bloco' : 'blocos' }}</p>
+            <div class="inspector-actions">
+              <button ds-button variant="ghost" size="sm" [disabled]="sel.sectionIndex === 0" (click)="moveSection(section.id, -1)">
+                ↑ Subir
+              </button>
+              <button ds-button variant="ghost" size="sm" [disabled]="sel.sectionIndex === layout().sections.length - 1" (click)="moveSection(section.id, 1)">
+                ↓ Descer
+              </button>
+              <button ds-button [variant]="confirmingRemove() === section.id ? 'destructive' : 'ghost'" size="sm" (click)="remove(section.id)">
+                <svg lucideTrash2 [size]="14"></svg>
+                {{ confirmingRemove() === section.id ? 'Remover seção e blocos' : 'Remover seção' }}
+              </button>
+              @if (confirmingRemove() === section.id) {
+                <button ds-button variant="ghost" size="sm" (click)="confirmingRemove.set(null)">Cancelar</button>
+              }
+            </div>
+          }
+        }
+        @default {
+          <h2 class="panel-title">Propriedades</h2>
+          <p class="m-0 text-footnote text-fg-muted">
+            Clique num bloco da prévia ou da estrutura para editar. Use <strong>+ Bloco</strong> para adicionar KPIs, gráficos,
+            tabelas, textos e pontos de atenção.
+          </p>
+        }
+      }
+    </aside>
+  </div>
+}

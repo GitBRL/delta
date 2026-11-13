@@ -1,0 +1,99 @@
+<app-auth-layout [heading]="heading()" [subheading]="subheading()">
+  @switch (view()) {
+    @case ('loading') {
+      <div class="flex flex-col gap-3" aria-busy="true" aria-label="Carregando convite">
+        <ds-skeleton width="70%" height="16px" />
+        <ds-skeleton width="100%" height="44px" radius="12px" />
+      </div>
+    }
+    @case ('invalid') {
+      <a ds-button [block]="true" routerLink="/login">Ir para o login</a>
+    }
+    @case ('error') {
+      <p class="general-error" role="alert">Não foi possível carregar o convite agora.</p>
+      <button ds-button type="button" variant="secondary" [block]="true" (click)="preview.reload()">Tentar de novo</button>
+    }
+    @case ('accepted') {
+      <a ds-button [block]="true" routerLink="/login" [queryParams]="{ email: invitation()?.email }">Entrar</a>
+    }
+    @case ('revoked') {
+      <a ds-button variant="secondary" [block]="true" routerLink="/login">Ir para o login</a>
+    }
+    @case ('expired') {
+      <a ds-button variant="secondary" [block]="true" routerLink="/login">Ir para o login</a>
+    }
+    @default {
+      @if (invitation(); as inv) {
+        <div class="invite-summary" animate.enter="ds-enter-fade-up">
+          <span class="agency-mark" aria-hidden="true">{{ inv.tenant_name.charAt(0).toUpperCase() }}</span>
+          <div class="min-w-0">
+            <p class="m-0 truncate text-headline">{{ inv.tenant_name }}</p>
+            <p class="m-0 text-footnote text-fg-muted">
+              {{ roleLabel[inv.role] }} · {{ roleDescription[inv.role] }}
+            </p>
+          </div>
+        </div>
+
+        @if (generalError()) {
+          <p class="general-error" role="alert" animate.enter="ds-enter-fade-up">{{ generalError() }}</p>
+        }
+
+        @switch (view()) {
+          @case ('accept') {
+            <button
+              ds-button
+              type="button"
+              size="lg"
+              [block]="true"
+              [loading]="submitting()"
+              [disabled]="submitting()"
+              (click)="accept()"
+            >
+              Aceitar convite
+            </button>
+          }
+          @case ('mismatch') {
+            <p class="note">
+              Este convite é para <strong>{{ inv.email }}</strong>, mas você entrou com outra conta.
+              Saia e entre com o e-mail do convite para aceitar.
+            </p>
+            <button ds-button type="button" size="lg" [block]="true" (click)="switchAccount()">
+              Sair e entrar com {{ inv.email }}
+            </button>
+          }
+          @case ('login') {
+            <p class="note">Já existe uma conta com <strong>{{ inv.email }}</strong>. Entre para aceitar o convite.</p>
+            <a ds-button size="lg" [block]="true" routerLink="/login" [queryParams]="loginQuery()">Entrar para aceitar</a>
+          }
+          @case ('register') {
+            <form class="form" [formGroup]="form" (ngSubmit)="register()" novalidate>
+              <p class="note">Crie sua senha para entrar como <strong>{{ inv.email }}</strong>.</p>
+              <ds-text-field label="Seu nome" name="name" autocomplete="name" formControlName="name" [error]="errorFor('name')" />
+              <div class="row">
+                <ds-text-field
+                  label="Senha"
+                  type="password"
+                  name="password"
+                  autocomplete="new-password"
+                  formControlName="password"
+                  [error]="errorFor('password')"
+                />
+                <ds-text-field
+                  label="Confirmar senha"
+                  type="password"
+                  name="password_confirmation"
+                  autocomplete="new-password"
+                  formControlName="password_confirmation"
+                  [error]="errorFor('password_confirmation')"
+                />
+              </div>
+              <button ds-button type="submit" size="lg" [block]="true" [loading]="submitting()" [disabled]="submitting()">
+                Criar conta e entrar
+              </button>
+            </form>
+          }
+        }
+      }
+    }
+  }
+</app-auth-layout>

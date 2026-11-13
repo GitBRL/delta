@@ -1,0 +1,146 @@
+<aside class="sidebar ds-glass">
+  @if (brand(); as b) {
+    <a
+      class="brand agency-brand"
+      routerLink="/overview"
+      [attr.aria-label]="b.name + ' — visão geral'"
+    >
+      @if (b.logo_url) {
+        <img class="agency-logo" [src]="b.logo_url" [alt]="b.name" />
+      } @else {
+        <span class="agency-name">{{ b.name }}</span>
+      }
+    </a>
+  } @else {
+    <a class="brand" routerLink="/overview" aria-label="Delta — visão geral">
+      <app-delta-logo [size]="28" />
+    </a>
+  }
+
+  <div class="tenant">
+    <span class="tenant-badge" aria-hidden="true">{{ tenantInitials() }}</span>
+    @if (tenant.tenants().length > 1) {
+      <label class="ds-visually-hidden" for="tenant-select">Agência</label>
+      <select id="tenant-select" class="tenant-select" (change)="onTenantChange($event)">
+        @for (t of tenant.tenants(); track t.id) {
+          <option [value]="t.id" [selected]="t.id === tenant.currentId()">{{ t.name }}</option>
+        }
+      </select>
+      <svg class="tenant-chevron" dsIcon="chevrons-up-down" [size]="14"></svg>
+    } @else {
+      <span class="tenant-name" [title]="tenant.current()?.name ?? ''">
+        <span class="ds-visually-hidden">Agência: </span>{{ tenant.current()?.name ?? '—' }}
+      </span>
+    }
+  </div>
+
+  <nav class="nav" aria-label="Principal">
+    @for (group of groups(); track group.id) {
+      <div
+        class="nav-group"
+        role="group"
+        [attr.aria-labelledby]="group.label ? 'nav-' + group.id : null"
+      >
+        @if (group.label) {
+          <h2 class="nav-heading" [id]="'nav-' + group.id">{{ group.label }}</h2>
+        }
+        @for (item of group.items; track item.path) {
+          <a
+            #link
+            class="nav-item"
+            [routerLink]="item.path"
+            routerLinkActive="active"
+            ariaCurrentWhenActive="page"
+            (isActiveChange)="onActive($event, link)"
+          >
+            <svg [dsIcon]="item.icon" [size]="18"></svg>
+            <span class="nav-label">{{ item.label }}</span>
+            @if (item.path === '/conversas' && unread() > 0) {
+              <span
+                class="nav-badge"
+                [attr.aria-label]="
+                  unread() + (unread() === 1 ? ' mensagem não lida' : ' mensagens não lidas')
+                "
+              >
+                {{ unread() > 99 ? '99+' : unread() }}
+              </span>
+            }
+          </a>
+        }
+      </div>
+    }
+  </nav>
+
+  <div class="footer">
+    <app-account-menu />
+  </div>
+</aside>
+
+<main class="content">
+  @if (trial(); as t) {
+    @if (!trialDismissed()) {
+      <div
+        class="banner"
+        [class.is-ended]="t.kind === 'ended'"
+        role="status"
+        data-testid="trial-banner"
+      >
+        <svg dsIcon="credit-card" [size]="16"></svg>
+        <span>
+          @if (t.kind === 'ending') {
+            {{
+              t.days === 0
+                ? 'O teste grátis termina hoje'
+                : t.days === 1
+                  ? 'O teste grátis termina amanhã'
+                  : 'O teste grátis termina em ' + t.days + ' dias'
+            }}: escolha um plano para continuar criando.
+          } @else if (t.status === 'canceled') {
+            A assinatura está cancelada: nada novo pode ser criado, mas tudo continua visível.
+          } @else {
+            O teste grátis terminou: nada novo pode ser criado, mas tudo continua visível.
+          }
+        </span>
+        <a routerLink="/configuracoes/plano">Ver plano</a>
+        <button
+          type="button"
+          class="banner-close"
+          (click)="trialDismissed.set(true)"
+          aria-label="Fechar aviso do plano"
+        >
+          <svg dsIcon="x" [size]="14"></svg>
+        </button>
+      </div>
+    }
+  }
+  @if (expiredCount() > 0 && !bannerDismissed()) {
+    <div class="banner" role="status">
+      <svg dsIcon="circle-exclamation-point" [size]="16"></svg>
+      <span>
+        {{
+          expiredCount() === 1
+            ? 'Uma conta conectada perdeu o acesso'
+            : expiredCount() + ' contas conectadas perderam o acesso'
+        }}: os números delas pararam de atualizar.
+      </span>
+      <a routerLink="/integracoes">Reconectar</a>
+      <button
+        type="button"
+        class="banner-close"
+        (click)="bannerDismissed.set(true)"
+        aria-label="Fechar aviso"
+      >
+        <svg dsIcon="x" [size]="14"></svg>
+      </button>
+    </div>
+  }
+  <router-outlet />
+</main>
+
+@if (planLimit.notice(); as notice) {
+  <app-plan-limit-dialog
+    [notice]="notice"
+    [canSeePlan]="tenant.isAdmin()"
+    (dismissed)="planLimit.dismiss()"
+  />
+}

@@ -1,0 +1,82 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-2);
+  padding: var(--ds-space-5);
+  border-radius: var(--ds-radius-lg);
+  background: var(--ds-glass-sheen), var(--ds-glass-bg);
+  border: 1px solid var(--ds-glass-border);
+  box-shadow: var(--ds-shadow-1), var(--ds-glass-rim);
+  backdrop-filter: var(--ds-glass-filter);
+  -webkit-backdrop-filter: var(--ds-glass-filter);
+  animation: tile-in var(--ds-duration-slower) var(--ds-ease-spring-gentle) both;
+}
+
+.head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ds-space-2);
+}
+
+.label {
+  font: var(--ds-text-subhead);
+  color: var(--ds-text-secondary);
+}
+
+.value {
+  font: var(--ds-text-title-1);
+  letter-spacing: var(--ds-tracking-tight);
+  color: var(--ds-text);
+}
+
+.approx {
+  margin-right: 4px;
+  color: var(--ds-text-tertiary);
+}
+
+.trend {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 4px;
+  font: var(--ds-text-footnote);
+  font-weight: 600;
+}
+
+.trend[data-sentiment='positive'] {
+  color: var(--ds-trend-positive);
+}
+
+.trend[data-sentiment='negative'] {
+  color: var(--ds-trend-negative);
+}
+
+.trend[data-sentiment='neutral'] {
+  color: var(--ds-text-secondary);
+}
+
+.arrow {
+  font-size: 10px;
+}
+
+.caption {
+  font-weight: 400;
+  color: var(--ds-text-tertiary);
+}
+
+.hint {
+  margin: 0;
+  font: var(--ds-text-footnote);
+  color: var(--ds-text-secondary);
+}
+
+@keyframes tile-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}

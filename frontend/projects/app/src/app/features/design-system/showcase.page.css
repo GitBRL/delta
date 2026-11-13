@@ -1,0 +1,164 @@
+:host {
+  display: block;
+  min-height: 100dvh;
+  background: var(--ds-bg-ambient);
+  background-attachment: fixed;
+}
+
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: var(--ds-z-sticky);
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-3);
+  padding: var(--ds-space-3) var(--ds-space-6);
+  border-width: 0 0 1px;
+}
+
+.title {
+  font: var(--ds-text-headline);
+  color: var(--ds-text-secondary);
+}
+
+.spacer {
+  flex: 1;
+}
+
+.page {
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: var(--ds-space-10) var(--ds-space-6) var(--ds-space-16);
+}
+
+.intro h1 {
+  margin: 0;
+  font: var(--ds-text-large-title);
+  letter-spacing: var(--ds-tracking-tight);
+}
+
+.intro p {
+  max-width: 68ch;
+  color: var(--ds-text-secondary);
+  font: var(--ds-text-callout);
+}
+
+.block {
+  margin-top: var(--ds-space-12);
+}
+
+.block h2 {
+  margin: 0 0 var(--ds-space-4);
+  font: var(--ds-text-title-2);
+  letter-spacing: var(--ds-tracking-tight);
+}
+
+.block h3 {
+  margin: var(--ds-space-6) 0 var(--ds-space-3);
+  font: var(--ds-text-headline);
+}
+
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--ds-space-3);
+  margin-top: var(--ds-space-4);
+}
+
+.grid-2 {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: var(--ds-space-4);
+}
+
+.grid-4 {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: var(--ds-space-4);
+}
+
+.swatches {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: var(--ds-space-3);
+}
+
+.swatch {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font: var(--ds-text-footnote);
+}
+
+.swatch code {
+  color: var(--ds-text-tertiary);
+  font: 11px/14px var(--ds-font-mono);
+}
+
+.chip {
+  height: 56px;
+  border-radius: var(--ds-radius-md);
+  border: 1px solid var(--ds-separator);
+}
+
+.type p {
+  margin: 0 0 var(--ds-space-2);
+}
+
+.card-title {
+  margin: 0 0 var(--ds-space-2) !important;
+}
+
+.muted {
+  margin: 0;
+  color: var(--ds-text-secondary);
+}
+
+.stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-3);
+}
+
+code {
+  font-family: var(--ds-font-mono);
+  font-size: 0.92em;
+}
+
+/* Materiais: as amostras ficam sobre uma faixa colorida, para o vidro ter o que refratar. */
+.materials {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: var(--ds-space-4);
+  padding: var(--ds-space-6);
+  border-radius: var(--ds-radius-xl);
+  background:
+    radial-gradient(40% 80% at 15% 30%, var(--ds-ring-acquisition), transparent 70%),
+    radial-gradient(40% 80% at 55% 70%, var(--ds-ring-engagement), transparent 70%),
+    radial-gradient(40% 80% at 90% 25%, var(--ds-ring-conversion), transparent 70%),
+    var(--ds-bg-grouped);
+}
+
+.material {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-height: 112px;
+  padding: var(--ds-space-4);
+  border-radius: var(--ds-radius-lg);
+}
+
+.material strong {
+  font: var(--ds-text-headline);
+}
+
+.material span {
+  color: var(--ds-text-secondary);
+  font: var(--ds-text-footnote);
+}
+
+.material code {
+  margin-top: auto;
+  font: 12px / 16px var(--ds-font-mono);
+}

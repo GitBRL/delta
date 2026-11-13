@@ -1,0 +1,52 @@
+#!/usr/bin/env bash
+# Angular do Delta em segundo plano (porta 4300), sobrevivendo ao fechamento do terminal.
+#   bin/front-bg start   sobe (se ainda não estiver no ar)
+#   bin/front-bg stop    para SÓ o servidor do Delta (confere a pasta do processo)
+#   bin/front-bg status
+set -euo pipefail
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+PORT=4300
+LOG="$ROOT/.ng-serve.log"
+
+pids() {
+  ss -ltnp 2>/dev/null | grep ":${PORT} " | grep -oE 'pid=[0-9]+' | cut -d= -f2 | sort -u || true
+}
+
+ours() {
+  local pid=$1 cwd
+  cwd="$(readlink "/proc/${pid}/cwd" 2>/dev/null || true)"
+  [[ "$cwd" == "$ROOT/frontend"* ]]
+}
+
+case "${1:-status}" in
+  start)
+    if [[ -n "$(pids)" ]]; then
+      echo "Angular já está no ar: http://localhost:${PORT}"
+      exit 0
+    fi
+    export NODE_OPTIONS="${NODE_OPTIONS:---max-old-space-size=1536}"
+    cd "$ROOT/frontend"
+    # Sessão própria e TODOS os descritores redirecionados: nada fica preso ao terminal ou ao make.
+    setsid nohup npm start >"$LOG" 2>&1 </dev/null &
+    disown || true
+    echo "Angular subindo em http://localhost:${PORT} (log: .ng-serve.log). Para parar: make dev-stop"
+    ;;
+  stop)
+    stopped=0
+    for pid in $(pids); do
+      if ours "$pid"; then
+        kill "$pid" && echo "Angular parado (pid ${pid})" && stopped=1
+      else
+        echo "A porta ${PORT} é de outro processo (pid ${pid}); nada foi feito."
+      fi
+    done
+    [[ $stopped == 1 ]] || echo "Nenhum Angular do Delta no ar."
+    ;;
+  status)
+    if [[ -n "$(pids)" ]]; then echo "Angular no ar: http://localhost:${PORT}"; else echo "Angular parado."; fi
+    ;;
+  *)
+    echo "uso: bin/front-bg start|stop|status" >&2
+    exit 2
+    ;;
+esac

@@ -1,0 +1,151 @@
+/*
+ * Botão em cápsula, no material Liquid Glass:
+ *   primário/destrutivo = vidro tingido (cor cheia + reflexo em cima + sombra da própria cor)
+ *   secundário          = vidro claro, com desfoque do que está atrás
+ *   ghost               = só texto; ganha um véu da cor de destaque ao passar o cursor
+ */
+:host {
+  --btn-bg: var(--ds-accent);
+  --btn-fg: var(--ds-on-accent);
+  --btn-border: color-mix(in oklch, var(--btn-bg) 82%, white);
+  --btn-height: 40px;
+  --btn-pad: 18px;
+  /* Reflexo: luz entrando por cima do vidro. */
+  --btn-gloss: linear-gradient(
+    180deg,
+    rgb(255 255 255 / 0.26),
+    rgb(255 255 255 / 0.04) 48%,
+    transparent 52%
+  );
+  --btn-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.38), inset 0 -1px 0 rgb(0 0 0 / 0.14),
+    0 1px 2px var(--ds-shadow-color),
+    0 8px 18px -8px color-mix(in oklch, var(--btn-bg) 70%, transparent);
+  --btn-filter: none;
+
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--ds-space-2);
+  height: var(--btn-height);
+  padding: 0 var(--btn-pad);
+  border: 1px solid var(--btn-border);
+  border-radius: var(--ds-radius-full);
+  background: var(--btn-gloss), var(--btn-bg);
+  box-shadow: var(--btn-shadow);
+  backdrop-filter: var(--btn-filter);
+  -webkit-backdrop-filter: var(--btn-filter);
+  color: var(--btn-fg);
+  font: var(--ds-text-subhead);
+  font-weight: 600;
+  letter-spacing: var(--ds-tracking-snug);
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  /* Regra do DS: só transform e opacity são animados. */
+  transition:
+    transform var(--ds-duration-base) var(--ds-ease-spring),
+    opacity var(--ds-duration-fast) var(--ds-ease-out);
+}
+
+:host(:hover) {
+  --btn-bg: var(--ds-accent-hover);
+}
+
+/* Toque "físico": comprime e volta com mola. */
+:host(:active) {
+  transform: scale(0.97);
+}
+
+:host([data-variant='secondary']) {
+  --btn-bg: var(--ds-glass-bg-clear);
+  --btn-fg: var(--ds-text);
+  --btn-border: var(--ds-glass-border);
+  --btn-gloss: var(--ds-glass-sheen);
+  --btn-shadow: var(--ds-shadow-1), var(--ds-glass-rim);
+  --btn-filter: var(--ds-glass-filter);
+}
+
+:host([data-variant='secondary']:hover) {
+  --btn-bg: var(--ds-glass-bg);
+}
+
+:host([data-variant='ghost']) {
+  --btn-bg: transparent;
+  --btn-fg: var(--ds-accent);
+  --btn-border: transparent;
+  --btn-gloss: none;
+  --btn-shadow: none;
+}
+
+:host([data-variant='ghost']:hover) {
+  --btn-bg: var(--ds-accent-soft);
+}
+
+:host([data-variant='destructive']) {
+  --btn-bg: var(--ds-status-critical);
+  --btn-fg: #fff;
+}
+
+:host([data-variant='destructive']:hover) {
+  --btn-bg: color-mix(in oklch, var(--ds-status-critical) 86%, black);
+}
+
+:host([data-size='sm']) {
+  --btn-height: 32px;
+  --btn-pad: 14px;
+  font: var(--ds-text-footnote);
+  font-weight: 600;
+}
+
+:host([data-size='lg']) {
+  --btn-height: 48px;
+  --btn-pad: 24px;
+  font: var(--ds-text-headline);
+}
+
+:host(.is-block) {
+  display: flex;
+  width: 100%;
+}
+
+:host([disabled]),
+:host([aria-disabled='true']) {
+  opacity: 0.45;
+  cursor: not-allowed;
+  transform: none;
+}
+
+:host(.is-loading) {
+  cursor: progress;
+}
+
+/* Ícone e texto na mesma linha, centralizados (o reset do Tailwind deixa <svg> como bloco). */
+.content {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
+:host(.is-loading) .content {
+  opacity: 0.7;
+}
+
+.spinner {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  animation: spin 700ms linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

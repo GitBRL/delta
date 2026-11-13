@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Calculadora de CPA máximo · Ferramentas gratuitas do Delta</title>
+<meta name="description" content="Quanto você pode pagar por venda sem perder dinheiro, e o CPA-alvo para manter o lucro desejado.">
+<link rel="canonical" href="http://localhost:4400/ferramentas/cpa-maximo.html">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Calculadora de CPA máximo · Ferramentas gratuitas do Delta">
+<meta property="og:description" content="Quanto você pode pagar por venda sem perder dinheiro, e o CPA-alvo para manter o lucro desejado.">
+<meta property="og:url" content="http://localhost:4400/ferramentas/cpa-maximo.html">
+<meta property="og:locale" content="pt_BR">
+<meta name="theme-color" content="#0a84ff">
+<link rel="icon" href="/assets/icone.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/assets/site.css">
+
+</head>
+<body>
+<a class="skip" href="#conteudo">Pular para o conteúdo</a>
+<header class="top">
+  <div class="wrap">
+    <a class="brand" href="/"><span aria-hidden="true">Δ</span>Delta</a>
+    <nav class="main" aria-label="Principal"><ul>
+<li><a href="/">Produto</a></li>
+<li><a href="/precos.html">Preços</a></li>
+<li><a href="/ferramentas/">Ferramentas</a></li>
+<li><a href="/academy/">Academy</a></li>
+<li><a href="/desenvolvedores.html">Desenvolvedores</a></li>
+    </ul></nav>
+    <a class="btn primary" href="http://localhost:4300/cadastro">Testar grátis</a>
+  </div>
+</header>
+<main id="conteudo">
+
+<article class="post">
+  <p class="eyebrow">Ferramenta gratuita</p>
+  <h1>Calculadora de CPA máximo</h1>
+  <p>Quanto você pode pagar por venda sem perder dinheiro, e o CPA-alvo para manter o lucro desejado.</p>
+  
+<form class="calc" id="f" novalidate>
+  <label>Ticket médio (R$) <input name="ticket" type="number" inputmode="decimal" min="0" step="0.01" value="180" required></label>
+  <label>Margem bruta (%) <input name="margin" type="number" inputmode="decimal" min="1" max="100" step="0.1" value="40" required></label>
+  <label>Lucro desejado por venda (% do ticket) <input name="profit" type="number" inputmode="decimal" min="0" max="100" step="0.1" value="10"></label>
+</form>
+  <div class="result" id="resultado" aria-live="polite"><p>Preencha os campos para ver o resultado.</p></div>
+  <p class="note">Entenda a conta no artigo da <a href="/academy/roas-de-equilibrio.html">Academy</a>.</p>
+  <p class="note">A conta é feita no seu navegador: nada do que você digita é enviado.</p>
+</article>
+</main>
+<footer class="bottom">
+  <div class="wrap cols">
+    <div><strong>Delta</strong><p>Relatórios e inteligência de marketing para agências.</p></div>
+    <div><strong>Produto</strong><ul>
+      <li><a href="/">Visão geral</a></li><li><a href="/precos.html">Preços</a></li><li><a href="/seguranca.html">Segurança</a></li><li><a href="/desenvolvedores.html">API, MCP e Connect</a></li>
+    </ul></div>
+    <div><strong>Aprender</strong><ul>
+      <li><a href="/academy/">Academy</a></li><li><a href="/glossario.html">Glossário</a></li><li><a href="/ferramentas/">Ferramentas gratuitas</a></li>
+    </ul></div>
+    <div><strong>Parcerias</strong><ul><li><a href="/afiliados.html">Programa de afiliados</a></li><li><a href="http://localhost:4300/login">Entrar</a></li></ul></div>
+  </div>
+</footer>
+<script type="module">
+import { maxCpa, format } from '/assets/calc.mjs';
+const f = document.getElementById('f'); const out = document.getElementById('resultado');
+const run = () => { const r = maxCpa(Number(f.ticket.value), Number(f.margin.value), Number(f.profit.value || 0));
+  out.innerHTML = r === null ? '<p>Confira os valores.</p>' : `<strong class="big">${format.money(r.target)} por venda</strong><p>CPA-alvo para manter o lucro desejado. O limite para empatar é ${format.money(r.breakEven)}.</p>`; };
+f.addEventListener('input', run); run();
+</script>
+</body>
+</html>

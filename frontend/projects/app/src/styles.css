@@ -1,0 +1,5 @@
+/* Ordem importa: Tailwind (preflight) → tokens → ponte Tailwind → base do DS. */
+@import 'tailwindcss';
+@import '../../design-system/src/styles/tokens.css';
+@import '../../design-system/src/styles/tailwind-theme.css';
+@import '../../design-system/src/styles/base.css';

@@ -1,0 +1,221 @@
+<a class="back" routerLink="/integracoes"><svg lucideArrowLeft [size]="14"></svg> Integrações</a>
+
+<header class="mb-8">
+  <p class="m-0 text-footnote font-semibold uppercase tracking-wider text-fg-subtle">{{ tenant.current()?.name }}</p>
+  <h1 class="m-0 mt-1 text-large-title font-bold tracking-tight">Apps das plataformas</h1>
+  <p class="m-0 mt-2 max-w-2xl text-subhead text-fg-muted">
+    O login real com a Meta, o Google, o TikTok e o LinkedIn usa um “app” cadastrado na própria plataforma. Crie o
+    app uma vez, cole aqui o ID e a chave secreta e pronto: o botão “Conectar conta real” passa a funcionar para toda
+    a equipe.
+    A chave fica guardada criptografada e nunca é exibida de novo.
+  </p>
+</header>
+
+@if (!tenant.isAdmin()) {
+  <div class="state ds-glass" role="note">
+    <svg lucideKeyRound [size]="22" class="text-fg-subtle"></svg>
+    <p class="m-0 text-headline">Só donos e administradores da agência configuram os apps das plataformas.</p>
+    <p class="m-0 text-footnote text-fg-muted">Peça a um deles para cadastrar as credenciais das plataformas.</p>
+  </div>
+} @else if (apps.isLoading() && !apps.hasValue()) {
+  <div class="apps">
+    @for (i of [1, 2]; track i) {
+      <div class="app-skeleton ds-glass">
+        <ds-skeleton width="44px" height="44px" radius="12px" />
+        <ds-skeleton width="40%" height="18px" />
+        <ds-skeleton width="70%" height="12px" />
+        <ds-skeleton width="100%" height="44px" radius="12px" />
+      </div>
+    }
+  </div>
+} @else if (apps.error()) {
+  <div class="state ds-glass" role="alert">
+    <p class="m-0 text-headline">Não foi possível carregar os apps das plataformas.</p>
+    <button ds-button variant="secondary" size="sm" (click)="apps.reload()">Tentar de novo</button>
+  </div>
+} @else {
+  <div class="apps">
+    @for (app of appList(); track app.vendor) {
+      @let status = statusOf(app);
+      @let draft = draftOf(app.vendor);
+      @let result = results()[app.vendor];
+      <ds-glass-card
+        padding="lg"
+        class="app-card"
+        [id]="'app-' + app.vendor"
+        [class.is-target]="target() === app.vendor"
+        [attr.aria-labelledby]="'app-title-' + app.vendor"
+        animate.enter="ds-enter-fade-up"
+      >
+        <div class="app-head">
+          <span class="vendor-icon"><app-provider-icon [provider]="vendorIcon[app.vendor]" [size]="22" /></span>
+          <div class="min-w-0 flex-1">
+            <h2 class="m-0 text-title-3 font-semibold" [id]="'app-title-' + app.vendor">{{ app.name }}</h2>
+            <p class="m-0 text-footnote text-fg-muted">Usado por {{ platformNames(app) }}</p>
+          </div>
+          @if (status.level) {
+            <ds-status-badge [status]="status.level" [label]="status.label" [pulse]="false" />
+          } @else {
+            <span class="chip" role="status">{{ status.label }}</span>
+          }
+        </div>
+
+        @if (app.updated_at && app.source === 'agency') {
+          <p class="meta-line">
+            Atualizado{{ app.updated_by ? ' por ' + app.updated_by : '' }} {{ relativeTime(app.updated_at) }}
+            @if (app.verified_at) {
+              · verificado {{ relativeTime(app.verified_at) }}
+            }
+          </p>
+        }
+        @if (app.status === 'server') {
+          <p class="meta-line">
+            O servidor já tem um app {{ vendorOf[app.vendor] }} configurado. Cadastre o da agência só se quiser usar o seu.
+          </p>
+        }
+        @if (app.status === 'invalid' && app.verification_error && !result) {
+          <p class="result is-error" role="alert">{{ app.verification_error }}</p>
+        }
+        @if (app.missing_platforms.length && app.status !== 'missing') {
+          <p class="meta-line">
+            Ainda sem login real: {{ joinNames(missingPlatformNames(app)) }}.
+            @if (app.requires_developer_token && !app.developer_token_hint) {
+              Informe o developer token para liberar o Google Ads.
+            }
+          </p>
+        }
+
+        <!-- Passo a passo -->
+        <details class="guide" [open]="app.status === 'missing'">
+          <summary>Como criar o app {{ vendorOf[app.vendor] }}</summary>
+          <ol class="steps">
+            @for (step of guide[app.vendor].steps; track $index) {
+              <li>{{ step }}</li>
+            }
+          </ol>
+          <a class="console-link" [href]="app.console_url" target="_blank" rel="noopener noreferrer">
+            {{ guide[app.vendor].console }} <svg lucideExternalLink [size]="13"></svg>
+          </a>
+          <p class="m-0 mt-3 text-caption text-fg-subtle">{{ guide[app.vendor].note }}</p>
+        </details>
+
+        <!-- Endereços para colar na plataforma -->
+        <div class="uris">
+          <p class="uris-title">Endereços de retorno para cadastrar no app</p>
+          <ul class="m-0 list-none p-0">
+            @for (uri of app.redirect_uris; track uri) {
+              <li class="uri">
+                <code>{{ uri }}</code>
+                <button ds-button variant="ghost" size="sm" [attr.aria-label]="'Copiar ' + uri" (click)="copy(uri)">
+                  <svg lucideCopy [size]="14"></svg>
+                  Copiar
+                </button>
+              </li>
+            }
+          </ul>
+        </div>
+
+        <!-- Credenciais -->
+        <form class="form" (ngSubmit)="save(app)" [attr.aria-label]="'Credenciais do app ' + vendorOf[app.vendor]">
+          <ds-text-field
+            [label]="idLabel[app.vendor]"
+            [name]="'client_id_' + app.vendor"
+            autocomplete="off"
+            [placeholder]="idPlaceholder[app.vendor]"
+            [ngModel]="draft.client_id"
+            (ngModelChange)="patch(app.vendor, { client_id: $event })"
+            [error]="errorOf(app.vendor, 'client_id')"
+            [maxlength]="255"
+          />
+          <ds-text-field
+            [label]="secretLabel[app.vendor]"
+            type="password"
+            [name]="'client_secret_' + app.vendor"
+            autocomplete="new-password"
+            [placeholder]="hasStoredSecret(app) ? (app.client_secret_hint ?? '') + ' (mantida)' : 'Cole ' + secretNoun[app.vendor]"
+            [hint]="secretHint(app)"
+            [ngModel]="draft.client_secret"
+            (ngModelChange)="patch(app.vendor, { client_secret: $event })"
+            [error]="errorOf(app.vendor, 'client_secret')"
+            [maxlength]="255"
+          />
+          @if (app.requires_developer_token) {
+            <ds-text-field
+              label="Developer token do Google Ads"
+              type="password"
+              [name]="'developer_token_' + app.vendor"
+              autocomplete="off"
+              [placeholder]="app.developer_token_hint ? app.developer_token_hint + ' (mantido)' : 'Opcional'"
+              [hint]="tokenHint(app)"
+              [ngModel]="draft.developer_token"
+              (ngModelChange)="patch(app.vendor, { developer_token: $event })"
+              [error]="errorOf(app.vendor, 'developer_token')"
+              [maxlength]="128"
+            />
+          }
+
+          @if (result) {
+            <p
+              class="result"
+              [class.is-ok]="result.status === 'verified'"
+              [class.is-error]="result.status === 'invalid'"
+              [attr.role]="result.status === 'invalid' ? 'alert' : 'status'"
+              animate.enter="ds-enter-fade-up"
+            >
+              {{ result.message }}
+            </p>
+          }
+
+          <div class="actions">
+            @if (confirmingRemove() === app.vendor) {
+              <span class="confirm-text">
+                Remover o app {{ vendorOf[app.vendor] }}? Conexões reais já feitas com ele podem parar de renovar o acesso.
+              </span>
+              <button ds-button type="button" variant="ghost" size="sm" (click)="confirmingRemove.set(null)">Cancelar</button>
+              <button
+                ds-button
+                type="button"
+                variant="destructive"
+                size="sm"
+                [loading]="isBusy(app.vendor, 'remove')"
+                [disabled]="!!busy()"
+                (click)="remove(app)"
+              >
+                Remover
+              </button>
+            } @else {
+              <button ds-button type="submit" size="sm" [loading]="isBusy(app.vendor, 'save')" [disabled]="!!busy()">
+                Salvar e verificar
+              </button>
+              @if (app.source === 'agency') {
+                <button
+                  ds-button
+                  type="button"
+                  variant="secondary"
+                  size="sm"
+                  [loading]="isBusy(app.vendor, 'verify')"
+                  [disabled]="!!busy()"
+                  (click)="verify(app)"
+                >
+                  <svg lucideRefreshCw [size]="14"></svg>
+                  Testar de novo
+                </button>
+                <button
+                  ds-button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  class="ml-auto"
+                  [disabled]="!!busy()"
+                  (click)="askRemove(app.vendor)"
+                >
+                  Remover
+                </button>
+              }
+            }
+          </div>
+        </form>
+      </ds-glass-card>
+    }
+  </div>
+}

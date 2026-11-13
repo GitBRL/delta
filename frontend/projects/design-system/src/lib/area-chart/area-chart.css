@@ -1,0 +1,199 @@
+:host {
+  display: block;
+  position: relative;
+  min-width: 0;
+}
+
+.frame {
+  position: relative;
+  width: 100%;
+  border-radius: var(--ds-radius-md);
+  touch-action: pan-y;
+}
+
+.svg {
+  display: block;
+  overflow: visible;
+}
+
+.stop-top {
+  stop-color: var(--ds-accent);
+  stop-opacity: 0.28;
+}
+
+.stop-bottom {
+  stop-color: var(--ds-accent);
+  stop-opacity: 0;
+}
+
+.grid {
+  stroke: var(--ds-separator);
+  stroke-width: 1;
+  shape-rendering: crispEdges;
+}
+
+.axis {
+  fill: var(--ds-text-tertiary);
+  font: var(--ds-text-caption);
+  font-variant-numeric: tabular-nums;
+}
+
+.axis.y {
+  text-anchor: end;
+  dominant-baseline: middle;
+}
+
+.axis.x {
+  text-anchor: middle;
+}
+
+.area {
+  animation: area-in var(--ds-duration-slower) var(--ds-ease-out) 200ms both;
+}
+
+.line {
+  fill: none;
+  stroke: var(--ds-accent);
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  animation: draw 900ms var(--ds-ease-out) forwards;
+}
+
+.comparison {
+  fill: none;
+  stroke: var(--ds-text-tertiary);
+  stroke-width: 1.75;
+  stroke-dasharray: 5 5;
+  stroke-linecap: round;
+  animation: area-in var(--ds-duration-slower) var(--ds-ease-out) 300ms both;
+}
+
+.guide {
+  stroke: var(--ds-text-tertiary);
+  stroke-width: 1;
+  stroke-dasharray: 3 3;
+}
+
+.dot {
+  fill: var(--ds-bg-elevated);
+  stroke: var(--ds-accent);
+  stroke-width: 2.5;
+}
+
+.dot.previous {
+  stroke: var(--ds-text-tertiary);
+  stroke-width: 2;
+}
+
+.tooltip {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 1;
+  min-width: 160px;
+  padding: var(--ds-space-2) var(--ds-space-3);
+  border-radius: var(--ds-radius-md);
+  background: var(--ds-glass-bg-strong);
+  border: 1px solid var(--ds-glass-border);
+  box-shadow: var(--ds-shadow-2);
+  backdrop-filter: var(--ds-glass-filter);
+  -webkit-backdrop-filter: var(--ds-glass-filter);
+  pointer-events: none;
+}
+
+.tip-date {
+  margin: 0 0 4px;
+  font: var(--ds-text-caption);
+  color: var(--ds-text-secondary);
+}
+
+.tip-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  font: var(--ds-text-footnote);
+  color: var(--ds-text-secondary);
+}
+
+.tip-row strong {
+  margin-left: auto;
+  padding-left: var(--ds-space-3);
+  color: var(--ds-text);
+  font-variant-numeric: tabular-nums;
+}
+
+.swatch {
+  width: 10px;
+  height: 3px;
+  border-radius: 2px;
+}
+
+.swatch.current {
+  background: var(--ds-accent);
+}
+
+.swatch.previous {
+  background: var(--ds-text-tertiary);
+}
+
+.empty {
+  display: grid;
+  place-items: center;
+  margin: 0;
+  font: var(--ds-text-footnote);
+  color: var(--ds-text-secondary);
+}
+
+@keyframes draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes area-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .line,
+  .area,
+  .comparison {
+    animation: none;
+    stroke-dashoffset: 0;
+  }
+}
+
+/* Marcos da linha do tempo */
+.marker {
+  stroke: var(--ds-status-opportunity, var(--ds-accent));
+  stroke-width: 1.25;
+  stroke-dasharray: 3 4;
+  opacity: 0.7;
+}
+
+.marker-flag {
+  fill: var(--ds-status-opportunity, var(--ds-accent));
+}
+
+.tip-marker {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  max-width: 220px;
+  margin: 4px 0 0;
+  font: var(--ds-text-caption);
+  color: var(--ds-text);
+}
+
+.tip-marker .flag {
+  color: var(--ds-status-opportunity, var(--ds-accent));
+}

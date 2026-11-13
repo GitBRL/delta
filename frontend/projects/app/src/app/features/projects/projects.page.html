@@ -1,0 +1,78 @@
+<header class="mb-8">
+  <p class="m-0 text-footnote font-semibold uppercase tracking-wider text-fg-subtle">{{ tenant.current()?.name }}</p>
+  <h1 class="m-0 mt-1 text-large-title font-bold tracking-tight">Projetos</h1>
+  <p class="m-0 mt-2 text-subhead text-fg-muted">Cada projeto é um cliente da sua agência.</p>
+</header>
+
+<div class="layout">
+  <ds-glass-card class="create" padding="lg">
+    <h2 class="m-0 mb-4 text-title-3 font-semibold">Novo projeto</h2>
+    <form class="flex flex-col gap-4" [formGroup]="form" (ngSubmit)="create()" novalidate>
+      <ds-text-field
+        label="Nome do cliente"
+        name="name"
+        autocomplete="off"
+        placeholder="Ex.: Padaria Aurora"
+        formControlName="name"
+        [error]="nameError()"
+      />
+
+      <div class="flex flex-col gap-1.5">
+        <label class="select-label" for="niche">Nicho</label>
+        <select id="niche" class="select" formControlName="niche">
+          <option value="">Selecione (opcional)</option>
+          @for (n of niches; track n.value) {
+            <option [value]="n.value">{{ n.label }}</option>
+          }
+        </select>
+        <span class="text-footnote text-fg-muted">Calibra modelos e alertas de boas práticas.</span>
+      </div>
+
+      <button ds-button type="submit" [loading]="creating()" [disabled]="creating() || !tenant.currentId()">
+        <svg lucidePlus [size]="16"></svg>
+        Criar projeto
+      </button>
+    </form>
+  </ds-glass-card>
+
+  <section class="list" aria-label="Lista de projetos" [attr.aria-busy]="projects.isLoading()">
+    @if (projects.isLoading() && !projects.hasValue()) {
+      @for (i of [1, 2, 3]; track i) {
+        <div class="row ds-glass">
+          <div class="flex flex-1 flex-col gap-2">
+            <ds-skeleton width="45%" height="16px" />
+            <ds-skeleton width="25%" height="12px" />
+          </div>
+        </div>
+      }
+    } @else if (loadError()) {
+      <div class="state ds-glass" role="alert">
+        <p class="m-0 text-headline">{{ loadError() }}</p>
+        <button ds-button variant="secondary" size="sm" (click)="projects.reload()">Tentar de novo</button>
+      </div>
+    } @else if (items().length === 0) {
+      <div class="state ds-glass">
+        <svg lucideFolderOpen [size]="36" class="text-fg-subtle"></svg>
+        <p class="m-0 text-headline">Nenhum projeto ainda</p>
+        <p class="m-0 text-footnote text-fg-muted">Crie o primeiro ao lado para conectar contas e montar relatórios.</p>
+      </div>
+    } @else {
+      <ul class="m-0 flex list-none flex-col gap-2 p-0">
+        @for (project of items(); track project.id) {
+          <li animate.enter="ds-enter-fade-up">
+            <a class="row link ds-glass" [routerLink]="['/projetos', project.id]">
+              <div class="avatar" aria-hidden="true">{{ project.name.charAt(0).toUpperCase() }}</div>
+              <div class="min-w-0 flex-1">
+                <p class="m-0 truncate text-subhead font-semibold">{{ project.name }}</p>
+                <p class="m-0 text-footnote text-fg-muted">
+                  {{ nicheLabel(project.niche) }} · criado em {{ project.created_at | date: 'dd/MM/yyyy' }}
+                </p>
+              </div>
+              <svg lucideChevronRight [size]="18" class="text-fg-subtle" aria-hidden="true"></svg>
+            </a>
+          </li>
+        }
+      </ul>
+    }
+  </section>
+</div>

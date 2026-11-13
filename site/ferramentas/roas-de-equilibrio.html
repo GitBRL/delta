@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Calculadora de ROAS de equilíbrio · Ferramentas gratuitas do Delta</title>
+<meta name="description" content="Descubra o ROAS mínimo para suas campanhas não darem prejuízo, a partir da margem bruta.">
+<link rel="canonical" href="http://localhost:4400/ferramentas/roas-de-equilibrio.html">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Calculadora de ROAS de equilíbrio · Ferramentas gratuitas do Delta">
+<meta property="og:description" content="Descubra o ROAS mínimo para suas campanhas não darem prejuízo, a partir da margem bruta.">
+<meta property="og:url" content="http://localhost:4400/ferramentas/roas-de-equilibrio.html">
+<meta property="og:locale" content="pt_BR">
+<meta name="theme-color" content="#0a84ff">
+<link rel="icon" href="/assets/icone.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/assets/site.css">
+
+</head>
+<body>
+<a class="skip" href="#conteudo">Pular para o conteúdo</a>
+<header class="top">
+  <div class="wrap">
+    <a class="brand" href="/"><span aria-hidden="true">Δ</span>Delta</a>
+    <nav class="main" aria-label="Principal"><ul>
+<li><a href="/">Produto</a></li>
+<li><a href="/precos.html">Preços</a></li>
+<li><a href="/ferramentas/">Ferramentas</a></li>
+<li><a href="/academy/">Academy</a></li>
+<li><a href="/desenvolvedores.html">Desenvolvedores</a></li>
+    </ul></nav>
+    <a class="btn primary" href="http://localhost:4300/cadastro">Testar grátis</a>
+  </div>
+</header>
+<main id="conteudo">
+
+<article class="post">
+  <p class="eyebrow">Ferramenta gratuita</p>
+  <h1>Calculadora de ROAS de equilíbrio</h1>
+  <p>Descubra o ROAS mínimo para suas campanhas não darem prejuízo, a partir da margem bruta.</p>
+  
+<form class="calc" id="f" novalidate>
+  <label>Margem bruta (%) <input name="margin" type="number" inputmode="decimal" min="1" max="100" step="0.1" value="35" required><small>O que sobra da receita depois do custo do produto.</small></label>
+</form>
+  <div class="result" id="resultado" aria-live="polite"><p>Preencha os campos para ver o resultado.</p></div>
+  <p class="note">Entenda a conta no artigo da <a href="/academy/roas-de-equilibrio.html">Academy</a>.</p>
+  <p class="note">A conta é feita no seu navegador: nada do que você digita é enviado.</p>
+</article>
+</main>
+<footer class="bottom">
+  <div class="wrap cols">
+    <div><strong>Delta</strong><p>Relatórios e inteligência de marketing para agências.</p></div>
+    <div><strong>Produto</strong><ul>
+      <li><a href="/">Visão geral</a></li><li><a href="/precos.html">Preços</a></li><li><a href="/seguranca.html">Segurança</a></li><li><a href="/desenvolvedores.html">API, MCP e Connect</a></li>
+    </ul></div>
+    <div><strong>Aprender</strong><ul>
+      <li><a href="/academy/">Academy</a></li><li><a href="/glossario.html">Glossário</a></li><li><a href="/ferramentas/">Ferramentas gratuitas</a></li>
+    </ul></div>
+    <div><strong>Parcerias</strong><ul><li><a href="/afiliados.html">Programa de afiliados</a></li><li><a href="http://localhost:4300/login">Entrar</a></li></ul></div>
+  </div>
+</footer>
+<script type="module">
+import { breakEvenRoas, format } from '/assets/calc.mjs';
+const f = document.getElementById('f'); const out = document.getElementById('resultado');
+const run = () => { const r = breakEvenRoas(Number(f.margin.value));
+  out.innerHTML = r === null ? '<p>Informe uma margem entre 1% e 100%.</p>' : `<strong class="big">ROAS ${format.number(r)}</strong><p>Abaixo disso, cada real investido em anúncio traz prejuízo.</p>`; };
+f.addEventListener('input', run); run();
+</script>
+</body>
+</html>

@@ -1,0 +1,226 @@
+.providers {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: var(--ds-space-4);
+}
+
+.provider {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-3);
+  padding: var(--ds-space-5);
+  border-radius: var(--ds-radius-lg);
+}
+
+.provider-head,
+.connection-head {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-3);
+}
+
+.connection-head {
+  flex-wrap: wrap;
+}
+
+.provider-icon {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 44px;
+  height: 44px;
+  border-radius: var(--ds-radius-md);
+  background: var(--ds-accent-soft);
+  color: var(--ds-accent);
+}
+
+.provider-icon.small {
+  width: 36px;
+  height: 36px;
+}
+
+.provider-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--ds-space-2);
+  margin-top: var(--ds-space-4);
+}
+
+.is-unavailable {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+/* ---------- Handshake: Δ ── • • • ── canal ---------- */
+.handshake {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-2);
+  margin-top: var(--ds-space-4);
+  padding: var(--ds-space-2) var(--ds-space-3);
+  border-radius: var(--ds-radius-md);
+  background: var(--ds-fill);
+}
+
+.node {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--ds-bg-elevated);
+  color: var(--ds-accent);
+  box-shadow: var(--ds-shadow-1);
+  font-weight: 700;
+}
+
+.node.delta {
+  background: var(--ds-accent);
+  color: var(--ds-on-accent);
+}
+
+.wire {
+  position: relative;
+  flex: 0 0 56px;
+  height: 2px;
+  overflow: hidden;
+  border-radius: 1px;
+  background: color-mix(in oklch, var(--ds-accent) 25%, transparent);
+}
+
+.wire i {
+  position: absolute;
+  top: -2px;
+  left: 0;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--ds-accent);
+  animation: travel 1.2s var(--ds-ease-out) infinite;
+}
+
+.wire i:nth-child(2) {
+  animation-delay: 0.4s;
+}
+
+.wire i:nth-child(3) {
+  animation-delay: 0.8s;
+}
+
+.handshake-text {
+  font: var(--ds-text-footnote);
+  color: var(--ds-text-secondary);
+}
+
+@keyframes travel {
+  from {
+    opacity: 0;
+    transform: translateX(-6px);
+  }
+  30% {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+    transform: translateX(56px);
+  }
+}
+
+.live-note,
+.card-message {
+  margin: var(--ds-space-2) 0 0;
+  font: var(--ds-text-footnote);
+  color: var(--ds-text-secondary);
+}
+
+.card-message.is-error {
+  color: var(--ds-status-critical);
+}
+
+/* ---------- Conexões ---------- */
+.connection {
+  padding: var(--ds-space-4);
+  border-radius: var(--ds-radius-lg);
+}
+
+.accounts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--ds-space-2);
+  margin: var(--ds-space-3) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.account {
+  display: inline-flex;
+  gap: var(--ds-space-2);
+  padding: 4px 10px;
+  border-radius: var(--ds-radius-full);
+  background: var(--ds-fill);
+  font: var(--ds-text-footnote);
+}
+
+.error {
+  margin: var(--ds-space-3) 0 0;
+  font: var(--ds-text-footnote);
+  color: var(--ds-status-critical);
+}
+
+.state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--ds-space-2);
+  padding: var(--ds-space-10) var(--ds-space-6);
+  border-radius: var(--ds-radius-xl);
+  text-align: center;
+}
+
+/* Conexão recém-criada: anel de destaque que se desfaz. */
+.connection.is-new {
+  animation: new-connection 2.4s var(--ds-ease-out) both;
+}
+
+@keyframes new-connection {
+  from {
+    box-shadow: 0 0 0 3px var(--ds-glow), var(--ds-shadow-1);
+  }
+  to {
+    box-shadow: 0 0 0 0 transparent, var(--ds-shadow-1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .connection.is-new {
+    animation: none;
+    outline: 2px solid var(--ds-glow);
+  }
+
+  .wire i {
+    animation: none;
+    opacity: 1;
+  }
+
+  .wire i:nth-child(2) {
+    transform: translateX(24px);
+  }
+
+  .wire i:nth-child(3) {
+    transform: translateX(48px);
+  }
+}
+
+.expiring {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ds-space-2);
+  margin-top: var(--ds-space-3);
+  padding: var(--ds-space-2) var(--ds-space-3);
+  border-radius: var(--ds-radius-md);
+  background: color-mix(in srgb, var(--ds-status-attention) 14%, transparent);
+  font: var(--ds-text-footnote);
+}

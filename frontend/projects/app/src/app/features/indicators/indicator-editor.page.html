@@ -1,0 +1,194 @@
+<a class="back" routerLink="/indicadores">
+  <svg lucideArrowLeft [size]="16"></svg>
+  Indicadores
+</a>
+
+@if (notFound()) {
+  <div class="state ds-glass" role="alert">
+    <p class="m-0 text-headline">Indicador não encontrado</p>
+    <p class="m-0 text-footnote text-fg-muted">Ele pode ter sido excluído ou pertencer a outra agência.</p>
+  </div>
+} @else {
+  <header class="mb-6">
+    <p class="m-0 text-footnote font-semibold uppercase tracking-wider text-fg-subtle">
+      @if (isNew()) {
+        Novo indicador
+      } @else {
+        Editar indicador
+      }
+    </p>
+    <h1 class="m-0 mt-1 text-large-title font-bold tracking-tight">
+      {{ draft().name || (isNew() ? 'Sem nome' : '…') }}
+    </h1>
+    @if (editing(); as m) {
+      <p class="m-0 mt-1 text-footnote text-fg-muted">
+        Chave <code>{{ m.key }}</code> · não muda mesmo se o nome mudar
+      </p>
+    }
+  </header>
+
+  <div class="layout">
+    <ds-glass-card padding="lg" class="form-card">
+      @if (!canEdit()) {
+        <p class="readonly-note" role="note">Seu papel nesta agência é somente leitura.</p>
+      }
+
+      <form class="form" (ngSubmit)="save()" novalidate>
+        <ds-text-field
+          label="Nome"
+          name="name"
+          autocomplete="off"
+          placeholder="Ex.: ROAS combinado"
+          [ngModel]="draft().name"
+          [disabled]="!canEdit()"
+          (ngModelChange)="patch({ name: $event })"
+          [error]="serverErrors()['name'] ?? null"
+          [maxlength]="80"
+        />
+
+        <ds-text-field
+          label="Descrição (opcional)"
+          name="description"
+          autocomplete="off"
+          placeholder="Para que serve e como ler"
+          [ngModel]="draft().description"
+          [disabled]="!canEdit()"
+          (ngModelChange)="patch({ description: $event })"
+          [error]="serverErrors()['description'] ?? null"
+        />
+
+        <app-formula-field
+          [value]="draft().formula"
+          (valueChange)="patch({ formula: $event })"
+          [options]="options()"
+          [readonly]="!canEdit()"
+          [error]="formulaError()"
+        />
+
+        @if (draft().formula.trim()) {
+          <div class="reading">
+            <span class="reading-label">Como o Delta lê</span>
+            <app-formula-chips [formula]="draft().formula" [labels]="labels()" [animate]="true" />
+          </div>
+        }
+
+        <div class="row">
+          <label class="field">
+            <span>Formato</span>
+            <select name="unit" [disabled]="!canEdit()" (change)="setUnit($event)">
+              @for (u of unitOptions; track u.value) {
+                <option [value]="u.value" [selected]="u.value === draft().unit">{{ u.label }}</option>
+              }
+            </select>
+          </label>
+          <label class="field">
+            <span>Direção</span>
+            <select name="direction" [disabled]="!canEdit()" (change)="setDirection($event)">
+              @for (d of directionOptions; track d.value) {
+                <option [value]="d.value" [selected]="d.value === draft().direction">{{ d.label }}</option>
+              }
+            </select>
+          </label>
+          <label class="field">
+            <span>Casas decimais</span>
+            <select name="decimals" [disabled]="!canEdit()" (change)="setDecimals($event)">
+              @for (n of decimalOptions; track n) {
+                <option [value]="n" [selected]="n === draft().decimals">{{ n }}</option>
+              }
+            </select>
+          </label>
+        </div>
+        @for (field of ['unit', 'direction', 'decimals']; track field) {
+          @if (serverErrors()[field]; as message) {
+            <p class="field-error" role="alert">{{ message }}</p>
+          }
+        }
+
+        @if (canEdit()) {
+          <div class="actions">
+            <a ds-button variant="ghost" routerLink="/indicadores">Cancelar</a>
+            <button ds-button type="submit" [loading]="saving()" [disabled]="saving()">
+              @if (isNew()) {
+                Criar indicador
+              } @else {
+                Salvar alterações
+              }
+            </button>
+          </div>
+        }
+      </form>
+    </ds-glass-card>
+
+    <section class="preview" aria-labelledby="preview-title" aria-live="polite">
+      <ds-glass-card padding="lg">
+        <h2 id="preview-title" class="m-0 text-title-3 font-semibold">Preview ao vivo</h2>
+        <p class="m-0 mb-4 text-footnote text-fg-muted">Calculado com os dados reais do projeto escolhido.</p>
+
+        @if (projects.hasValue() && projectList().length === 0) {
+          <p class="m-0 text-footnote text-fg-muted">
+            Crie um projeto e vincule contas para ver o preview. <a routerLink="/projetos">Ir para Projetos</a>
+          </p>
+        } @else {
+          <div class="preview-controls">
+            <label class="field">
+              <span>Projeto</span>
+              <select name="project" (change)="setProject($event)">
+                @for (p of projectList(); track p.id) {
+                  <option [value]="p.id" [selected]="p.id === projectId()">{{ p.name }}</option>
+                }
+              </select>
+            </label>
+            <app-period-picker
+              [(preset)]="preset"
+              [(custom)]="custom"
+              [(compare)]="compare"
+              [error]="preset() === 'custom' ? rangeError() : null"
+            />
+          </div>
+
+          <div class="preview-body" [attr.aria-busy]="preview.state().status === 'loading'">
+            @if (previewMessage(); as message) {
+              <p class="placeholder" [class.invalid]="preview.state().status !== 'idle'" [attr.role]="preview.state().status === 'error' ? 'alert' : null">
+                {{ message }}
+              </p>
+            } @else if (preview.state().status === 'loading' && !previewResult()) {
+              <div class="flex flex-col gap-3">
+                <ds-skeleton width="40%" height="12px" />
+                <ds-skeleton width="60%" height="28px" />
+                <ds-skeleton width="100%" height="160px" />
+              </div>
+            }
+
+            @if (previewResult(); as r) {
+              <div class="result" animate.enter="ds-enter-fade-up">
+                <ds-kpi-tile
+                  [label]="draft().name || 'Indicador'"
+                  [value]="r.value"
+                  [formatter]="formatterFor(draft().unit, draft().decimals)"
+                  [trend]="trend(r.change_pct)"
+                  [direction]="kpiDirection(draft().direction)"
+                  [sentiment]="r.sentiment"
+                  [approximate]="r.approximate"
+                  [comparisonLabel]="comparisonCaption()"
+                />
+                @if (r.value === null) {
+                  <p class="m-0 text-footnote text-fg-muted">
+                    Sem dado no período: o projeto pode não ter conta das plataformas usadas, ou houve divisão por zero.
+                  </p>
+                }
+                <ds-area-chart
+                  [label]="draft().name || 'Indicador'"
+                  [series]="r.series"
+                  [comparison]="compare() === 'none' ? [] : r.previous_series"
+                  [valueFormatter]="formatterFor(draft().unit, draft().decimals)"
+                  [comparisonLabel]="compare() === 'previous_year' ? 'Ano anterior' : 'Período anterior'"
+                  [height]="200"
+                />
+              </div>
+            }
+          </div>
+        }
+      </ds-glass-card>
+    </section>
+  </div>
+}

@@ -1,0 +1,229 @@
+<header class="mb-8">
+  <p class="m-0 text-footnote font-semibold uppercase tracking-wider text-fg-subtle">{{ tenant.current()?.name }}</p>
+  <div class="mt-1 flex flex-wrap items-center justify-between gap-3">
+    <h1 class="m-0 text-large-title font-bold tracking-tight">Integrações</h1>
+    @if (tenant.isAdmin()) {
+      <div class="flex flex-wrap gap-2">
+        <a ds-button variant="secondary" size="sm" routerLink="/integracoes/whatsapp">WhatsApp</a>
+        <a ds-button variant="secondary" size="sm" routerLink="/integracoes/apps">
+          <svg lucideKeyRound [size]="14"></svg>
+          Apps das plataformas
+        </a>
+      </div>
+    }
+  </div>
+  <p class="m-0 mt-2 max-w-2xl text-subhead text-fg-muted">
+    Conecte as plataformas dos seus clientes com um clique: o login da plataforma abre em outra janela
+    e, ao autorizar, as contas aparecem aqui. Enquanto as aprovações das plataformas não saem, use as
+    contas de demonstração: elas geram dados realistas para montar projetos e relatórios.
+  </p>
+</header>
+
+<!-- Catálogo de canais -->
+<section aria-labelledby="providers-title" class="mb-10">
+  <h2 id="providers-title" class="m-0 mb-4 text-title-3 font-semibold">Canais disponíveis</h2>
+
+  @if (providers.isLoading() && !providers.hasValue()) {
+    <div class="providers">
+      @for (i of [1, 2, 3]; track i) {
+        <div class="provider ds-glass">
+          <ds-skeleton width="44px" height="44px" radius="12px" />
+          <ds-skeleton width="60%" height="16px" />
+          <ds-skeleton width="40%" height="12px" />
+        </div>
+      }
+    </div>
+  } @else if (providers.error()) {
+    <div class="state ds-glass" role="alert">
+      <p class="m-0 text-headline">Não foi possível carregar os canais.</p>
+      <button ds-button variant="secondary" size="sm" (click)="providers.reload()">Tentar de novo</button>
+    </div>
+  } @else {
+    <div class="providers">
+      @for (provider of providerList(); track provider.key) {
+        @let state = providerState()(provider.key);
+        <ds-glass-card [interactive]="true" padding="md" class="provider-card" [attr.data-state]="state">
+          <div class="provider-head">
+            <span class="provider-icon"><app-provider-icon [provider]="provider.key" [size]="22" /></span>
+            <div class="min-w-0">
+              <h3 class="m-0 truncate text-headline">{{ provider.name }}</h3>
+              <p class="m-0 text-footnote text-fg-muted">
+                {{ categoryLabel[provider.category] }} · {{ provider.metrics_count }} métricas
+              </p>
+            </div>
+            @if (state === 'connected') {
+              <ds-status-badge status="healthy" label="Conectado" class="ml-auto" />
+            }
+          </div>
+
+          @if (state === 'authorizing' || state === 'syncing') {
+            <div class="handshake" role="status" animate.enter="ds-enter-fade-up">
+              <span class="node delta">Δ</span>
+              <span class="wire" aria-hidden="true"><i></i><i></i><i></i></span>
+              <span class="node"><app-provider-icon [provider]="provider.key" [size]="14" /></span>
+              <span class="handshake-text">
+                @if (state === 'authorizing') {
+                  Aguardando autorização…
+                  <span class="block text-caption text-fg-subtle">Conclua o login na janela que abrimos.</span>
+                } @else {
+                  Sincronizando dados…
+                }
+              </span>
+              @if (state === 'authorizing') {
+                <button ds-button variant="ghost" size="sm" class="ml-auto" (click)="cancelPending()">Cancelar</button>
+              }
+            </div>
+          }
+
+          @if (canManage()) {
+            <div class="provider-actions">
+              <button
+                ds-button
+                size="sm"
+                [loading]="state === 'authorizing' && pending()?.mode === 'sandbox'"
+                [disabled]="!!pending()"
+                (click)="connect(provider, 'sandbox')"
+              >
+                <svg lucideSparkles [size]="14"></svg>
+                Conectar demonstração
+              </button>
+              @if (liveAvailable(provider)) {
+                <button
+                  ds-button
+                  variant="secondary"
+                  size="sm"
+                  [loading]="state === 'authorizing' && pending()?.mode === 'live'"
+                  [disabled]="!!pending()"
+                  (click)="connect(provider, 'live')"
+                >
+                  Conectar conta real
+                </button>
+              } @else {
+                <button
+                  ds-button
+                  variant="ghost"
+                  size="sm"
+                  aria-disabled="true"
+                  class="is-unavailable"
+                  [title]="liveNote(provider)"
+                  [attr.aria-describedby]="'live-hint-' + provider.key"
+                  (click)="liveUnavailable(provider)"
+                >
+                  <svg lucideLock [size]="14"></svg>
+                  Conectar conta real
+                </button>
+                <span class="ds-visually-hidden" [id]="'live-hint-' + provider.key">
+                  {{ liveNote(provider) }}{{ tenant.isAdmin() && provider.app_vendor ? ' Clique para configurar o app.' : '' }}
+                </span>
+              }
+            </div>
+            @if (liveAvailable(provider) && provider.live_note) {
+              <p class="live-note">{{ provider.live_note }}</p>
+            }
+          }
+
+          @if (cardMessages()[provider.key]; as message) {
+            <p class="card-message" [class.is-error]="message.kind === 'error'" [attr.role]="message.kind === 'error' ? 'alert' : 'status'">
+              {{ message.text }}
+            </p>
+          }
+        </ds-glass-card>
+      }
+    </div>
+  }
+</section>
+
+<!-- Conexões da agência -->
+<section aria-labelledby="connections-title" [attr.aria-busy]="connections.isLoading()">
+  <div class="mb-4 flex items-center justify-between gap-4">
+    <h2 id="connections-title" class="m-0 text-title-3 font-semibold">Conexões da agência</h2>
+    @if (syncing()) {
+      <ds-status-badge status="opportunity" label="Atualizando a cada 3 s" [pulse]="true" />
+    }
+  </div>
+
+  @if (connections.isLoading() && !connections.hasValue()) {
+    <div class="connection ds-glass"><ds-skeleton width="50%" height="16px" /></div>
+  } @else if (connections.error()) {
+    <div class="state ds-glass" role="alert">
+      <p class="m-0 text-headline">Não foi possível carregar as conexões.</p>
+      <button ds-button variant="secondary" size="sm" (click)="connections.reload()">Tentar de novo</button>
+    </div>
+  } @else if (connectionList().length === 0) {
+    <div class="state ds-glass">
+      <p class="m-0 text-headline">Nenhuma conexão ainda</p>
+      <p class="m-0 text-footnote text-fg-muted">
+        {{ canManage() ? 'Conecte uma conta acima para começar: o login abre em outra janela.' : 'A equipe da agência ainda não conectou nenhuma conta.' }}
+      </p>
+    </div>
+  } @else {
+    <ul class="m-0 flex list-none flex-col gap-3 p-0">
+      @for (connection of connectionList(); track connection.id) {
+        @let status = statusOf(connection.status);
+        <li class="connection ds-glass" animate.enter="ds-enter-fade-up" [class.is-new]="connection.id === highlightId()">
+          <div class="connection-head">
+            <span class="provider-icon small"><app-provider-icon [provider]="connection.provider" [size]="18" /></span>
+            <div class="min-w-0 flex-1">
+              <p class="m-0 truncate text-subhead font-semibold">
+                {{ providerName()(connection.provider) }} · {{ connection.label }}
+              </p>
+              <p class="m-0 text-footnote text-fg-muted">
+                {{ connection.mode === 'sandbox' ? 'Demonstração' : 'Conta real' }} · última sincronização
+                {{ relativeTime(connection.last_synced_at) }}
+              </p>
+            </div>
+            <ds-status-badge [status]="status.level" [label]="status.label" [pulse]="status.pulse" />
+            @if (connection.status === 'expired' && connection.mode === 'live' && canManage()) {
+              <button
+                ds-button
+                size="sm"
+                class="reconnect"
+                [loading]="pending()?.provider === connection.provider"
+                [disabled]="!!pending()"
+                (click)="reconnect(connection)"
+              >
+                Reconectar
+              </button>
+            } @else {
+              <button
+                ds-button
+                variant="secondary"
+                size="sm"
+                [loading]="syncRequested().has(connection.id)"
+                [disabled]="!canManage() || connection.status === 'syncing' || syncRequested().has(connection.id)"
+                (click)="syncNow(connection)"
+              >
+                <svg lucideRefreshCw [size]="14"></svg>
+                Sincronizar agora
+              </button>
+            }
+          </div>
+
+          @if (connection.last_error) {
+            <p class="error" role="alert">{{ connection.last_error }}</p>
+          }
+
+          @if (connection.status !== 'expired' && connection.expiring_soon) {
+            <div class="expiring" role="status">
+              <span>{{ expiringText(connection) }}</span>
+              @if (canManage()) {
+                <button ds-button variant="secondary" size="sm" [disabled]="!!pending()" (click)="reconnect(connection)">Reconectar agora</button>
+              }
+            </div>
+          }
+
+          @if (connection.accounts.length) {
+            <ul class="accounts" [attr.aria-label]="'Contas de ' + connection.label">
+              @for (account of connection.accounts; track account.id) {
+                <li class="account">
+                  <span class="font-semibold">{{ account.name }}</span>
+                  <span class="text-fg-muted">{{ kindLabel[account.kind] }}{{ account.currency ? ' · ' + account.currency : '' }}</span>
+                </li>
+              }
+            </ul>
+          }
+        </li>
+      }
+    </ul>
+  }
+</section>

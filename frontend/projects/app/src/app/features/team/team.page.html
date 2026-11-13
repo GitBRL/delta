@@ -1,0 +1,284 @@
+<header class="mb-8">
+  <p class="m-0 text-footnote font-semibold uppercase tracking-wider text-fg-subtle">{{ tenant.current()?.name }}</p>
+  <h1 class="m-0 mt-1 text-large-title font-bold tracking-tight">Equipe</h1>
+  <p class="m-0 mt-2 max-w-2xl text-subhead text-fg-muted">
+    Convide quem trabalha com você e os seus clientes. Cada pessoa recebe um link por e-mail, cria a senha e
+    entra já na agência, com o papel que você escolher.
+  </p>
+</header>
+
+@if (!tenant.isAdmin()) {
+  <div class="state ds-glass" role="note">
+    <svg lucideUsers [size]="22" class="text-fg-subtle"></svg>
+    <p class="m-0 text-headline">Só donos e administradores da agência gerenciam a equipe.</p>
+    <p class="m-0 text-footnote text-fg-muted">Peça a um deles para convidar pessoas ou mudar papéis.</p>
+  </div>
+} @else {
+  <div class="layout">
+    <!-- Convidar -->
+    <ds-glass-card padding="lg" class="invite-card">
+      <h2 class="m-0 mb-4 flex items-center gap-2 text-title-3 font-semibold">
+        <svg lucideUserPlus [size]="20"></svg> Convidar pessoa
+      </h2>
+      <form class="form" (ngSubmit)="invite()" novalidate aria-label="Convidar pessoa">
+        <ds-text-field
+          label="E-mail"
+          type="email"
+          name="invite_email"
+          autocomplete="off"
+          placeholder="nome@empresa.com"
+          [ngModel]="draft().email"
+          (ngModelChange)="patchDraft({ email: $event })"
+          [error]="inviteErrors()['email'] ?? null"
+          [maxlength]="255"
+        />
+
+        <fieldset class="roles">
+          <legend class="legend">Papel</legend>
+          @for (role of invitableRoles; track role) {
+            <label class="role-option" [class.is-on]="draft().role === role">
+              <input
+                type="radio"
+                name="invite_role"
+                [value]="role"
+                [checked]="draft().role === role"
+                (change)="patchDraft({ role })"
+              />
+              <span class="role-name">{{ roleLabel[role] }}</span>
+              <span class="role-desc">{{ roleDescription[role] }}</span>
+            </label>
+          }
+          @if (inviteErrors()['role']) {
+            <span class="field-error" role="alert">{{ inviteErrors()['role'] }}</span>
+          }
+        </fieldset>
+
+        @if (draft().role === 'client') {
+          <app-project-picker
+            name="invite-projects"
+            animate.enter="ds-enter-fade-up"
+            [projects]="projectRefs()"
+            [selected]="draft().projectIds"
+            (selectedChange)="patchDraft({ projectIds: $event })"
+            [error]="projectsErrorMessage()"
+          />
+        }
+
+        <button ds-button type="submit" [loading]="inviting()" [disabled]="inviting()">
+          <svg lucideMail [size]="16"></svg>
+          Enviar convite
+        </button>
+      </form>
+
+      @if (lastLink(); as link) {
+        <div class="link-card" role="status" animate.enter="ds-enter-fade-up">
+          <div class="flex items-start gap-2">
+            <p class="m-0 flex-1 text-footnote text-fg-muted">
+              {{ link.resent ? 'Novo link' : 'Link do convite' }} para <strong class="text-fg">{{ link.email }}</strong>.
+              Também enviamos por e-mail; se preferir, copie e mande pelo WhatsApp.
+            </p>
+            <button
+              type="button"
+              class="icon-btn"
+              aria-label="Fechar link do convite"
+              (click)="lastLink.set(null)"
+            >
+              <svg lucideX [size]="14"></svg>
+            </button>
+          </div>
+          <code class="link">{{ link.url }}</code>
+          <button ds-button type="button" variant="secondary" size="sm" (click)="copy(link.url)">
+            <svg lucideCopy [size]="14"></svg>
+            Copiar link
+          </button>
+        </div>
+      }
+    </ds-glass-card>
+
+    <div class="lists">
+      @if (team.isLoading() && !team.hasValue()) {
+        <section class="section" aria-busy="true">
+          @for (i of [1, 2, 3]; track i) {
+            <div class="row ds-glass">
+              <ds-skeleton width="40px" height="40px" radius="999px" />
+              <div class="flex flex-1 flex-col gap-2">
+                <ds-skeleton width="40%" height="14px" />
+                <ds-skeleton width="60%" height="12px" />
+              </div>
+            </div>
+          }
+        </section>
+      } @else if (team.error()) {
+        <div class="state ds-glass" role="alert">
+          <p class="m-0 text-headline">Não foi possível carregar a equipe.</p>
+          <button ds-button variant="secondary" size="sm" (click)="team.reload()">Tentar de novo</button>
+        </div>
+      } @else {
+        <!-- Membros -->
+        <section class="section" aria-labelledby="members-title">
+          <h2 id="members-title" class="section-title">Membros <span class="count">{{ members().length }}</span></h2>
+          <ul class="m-0 flex list-none flex-col gap-2 p-0">
+            @for (member of members(); track member.user_id) {
+              @let manageable = canManage(member);
+              @let editing = projectEdit()?.userId === member.user_id;
+              <li class="row member ds-glass" [attr.data-member]="member.user_id" animate.enter="ds-enter-fade-up">
+                <div class="member-main">
+                  <span class="avatar" aria-hidden="true">{{ initials(member.name) }}</span>
+                  <div class="min-w-0 flex-1">
+                    <p class="m-0 truncate text-subhead font-semibold">
+                      {{ member.name }}
+                      @if (member.is_you) {
+                        <span class="you">você</span>
+                      }
+                    </p>
+                    <p class="m-0 truncate text-footnote text-fg-muted">{{ member.email }}</p>
+                    @if (member.role === 'client' && member.projects.length && !editing) {
+                      <p class="m-0 mt-1 text-caption text-fg-subtle">Vê: {{ projectNamesOf(member.projects) }}</p>
+                    }
+                  </div>
+
+                  @if (manageable) {
+                    <label class="ds-visually-hidden" [for]="'role-' + member.user_id">Papel de {{ member.name }}</label>
+                    <select
+                      class="select"
+                      [id]="'role-' + member.user_id"
+                      [name]="'role-' + member.user_id"
+                      [ngModel]="roleOf(member)"
+                      (ngModelChange)="changeRole(member, $event)"
+                      [disabled]="savingMember() === member.user_id"
+                    >
+                      @for (role of roleOptions(); track role) {
+                        <option [value]="role">{{ roleLabel[role] }}</option>
+                      }
+                    </select>
+                  } @else {
+                    <span class="role-chip" [attr.data-role]="member.role">{{ roleLabel[member.role] }}</span>
+                  }
+                </div>
+
+                @if (editing) {
+                  <div class="edit" animate.enter="ds-enter-fade-up">
+                    <app-project-picker
+                      [name]="'member-projects-' + member.user_id"
+                      [projects]="projectRefs()"
+                      [selected]="projectEdit()?.projectIds ?? []"
+                      (selectedChange)="setEditProjects($event)"
+                    />
+                    <div class="actions">
+                      <button
+                        ds-button
+                        type="button"
+                        size="sm"
+                        [loading]="savingMember() === member.user_id"
+                        [disabled]="!!savingMember()"
+                        (click)="saveProjects(member)"
+                      >
+                        Salvar
+                      </button>
+                      <button ds-button type="button" variant="ghost" size="sm" (click)="cancelEdit(member)">Cancelar</button>
+                    </div>
+                  </div>
+                }
+
+                @if (memberErrors()[member.user_id]; as message) {
+                  <p class="member-error" role="alert">{{ message }}</p>
+                }
+
+                @if (manageable && !editing) {
+                  <div class="actions">
+                    @if (confirmRemove() === member.user_id) {
+                      <span class="confirm-text">Remover {{ member.name }} da agência? A pessoa perde o acesso na hora.</span>
+                      <button ds-button type="button" variant="ghost" size="sm" (click)="confirmRemove.set(null)">Cancelar</button>
+                      <button
+                        ds-button
+                        type="button"
+                        variant="destructive"
+                        size="sm"
+                        [loading]="savingMember() === member.user_id"
+                        [disabled]="!!savingMember()"
+                        (click)="remove(member)"
+                      >
+                        Remover
+                      </button>
+                    } @else {
+                      @if (member.role === 'client') {
+                        <button ds-button type="button" variant="ghost" size="sm" (click)="editProjects(member)">
+                          Editar projetos
+                        </button>
+                      }
+                      <button ds-button type="button" variant="ghost" size="sm" class="ml-auto" (click)="askRemove(member)">
+                        Remover
+                      </button>
+                    }
+                  </div>
+                }
+              </li>
+            }
+          </ul>
+        </section>
+
+        <!-- Convites pendentes -->
+        <section class="section" aria-labelledby="invitations-title">
+          <h2 id="invitations-title" class="section-title">
+            Convites pendentes <span class="count">{{ invitations().length }}</span>
+          </h2>
+          @if (invitations().length === 0) {
+            <p class="empty">Nenhum convite pendente.</p>
+          } @else {
+            <ul class="m-0 flex list-none flex-col gap-2 p-0">
+              @for (invitation of invitations(); track invitation.id) {
+                <li class="row invitation ds-glass" [attr.data-invitation]="invitation.id" animate.enter="ds-enter-fade-up">
+                  <div class="member-main">
+                    <span class="avatar is-pending" aria-hidden="true"><svg lucideMail [size]="16"></svg></span>
+                    <div class="min-w-0 flex-1">
+                      <p class="m-0 truncate text-subhead font-semibold">{{ invitation.email }}</p>
+                      <p class="m-0 text-footnote text-fg-muted">
+                        {{ roleLabel[invitation.role] }}
+                        @if (invitation.invited_by) {
+                          · enviado por {{ invitation.invited_by }}
+                        }
+                        ·
+                        @if (invitation.expired) {
+                          <span class="expired">expirado</span>
+                        } @else {
+                          expira {{ relativeTime(invitation.expires_at) }}
+                        }
+                      </p>
+                      @if (invitation.role === 'client' && invitation.projects.length) {
+                        <p class="m-0 mt-1 text-caption text-fg-subtle">Vai ver: {{ projectNamesOf(invitation.projects) }}</p>
+                      }
+                    </div>
+                  </div>
+                  <div class="actions">
+                    <button
+                      ds-button
+                      type="button"
+                      variant="secondary"
+                      size="sm"
+                      [loading]="busyInvitation() === invitation.id"
+                      [disabled]="!!busyInvitation()"
+                      (click)="resend(invitation)"
+                    >
+                      <svg lucideRotateCw [size]="14"></svg>
+                      Reenviar
+                    </button>
+                    <button
+                      ds-button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      [disabled]="!!busyInvitation()"
+                      (click)="revoke(invitation)"
+                    >
+                      Revogar
+                    </button>
+                  </div>
+                </li>
+              }
+            </ul>
+          }
+        </section>
+      }
+    </div>
+  </div>
+}

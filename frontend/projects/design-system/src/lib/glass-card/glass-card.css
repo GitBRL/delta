@@ -1,0 +1,66 @@
+:host {
+  --glow-x: 50%;
+  --glow-y: 50%;
+  --tilt-x: 0deg;
+  --tilt-y: 0deg;
+  --pad: var(--ds-space-6);
+
+  position: relative;
+  display: block;
+  overflow: hidden;
+  isolation: isolate;
+  border-radius: var(--ds-radius-xl);
+  background: var(--ds-glass-sheen), var(--ds-glass-bg);
+  border: 1px solid var(--ds-glass-border);
+  box-shadow: var(--ds-shadow-2), var(--ds-glass-rim);
+  backdrop-filter: var(--ds-glass-filter);
+  -webkit-backdrop-filter: var(--ds-glass-filter);
+  transform: perspective(900px) rotateX(var(--tilt-x)) rotateY(var(--tilt-y));
+  transition: transform var(--ds-duration-slow) var(--ds-ease-spring-gentle);
+}
+
+:host([data-padding='none']) {
+  --pad: 0;
+}
+
+:host([data-padding='sm']) {
+  --pad: var(--ds-space-4);
+}
+
+:host([data-padding='lg']) {
+  --pad: var(--ds-space-8);
+}
+
+.body {
+  position: relative;
+  z-index: 1;
+  padding: var(--pad);
+}
+
+/* Brilho: círculo desfocado de tamanho fixo, movido só por transform. */
+.glow {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 0;
+  width: 320px;
+  height: 320px;
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--ds-glow) 0%, transparent 70%);
+  opacity: 0;
+  pointer-events: none;
+  transform: translate(calc(var(--glow-x) - 160px), calc(var(--glow-y) - 160px));
+  transition: opacity var(--ds-duration-slow) var(--ds-ease-out);
+  will-change: transform;
+}
+
+:host(.is-interactive:hover) .glow {
+  opacity: 1;
+}
+
+@supports (corner-shape: squircle) {
+  :host {
+    corner-shape: squircle;
+    border-radius: calc(var(--ds-radius-xl) * 1.6);
+  }
+}

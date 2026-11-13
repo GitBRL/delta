@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+# Gera o .env da raiz (segredos do ambiente local) se ainda não existir.
+set -euo pipefail
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+ENV_FILE="$ROOT/.env"
+
+if [ -f "$ENV_FILE" ]; then
+    echo ".env já existe; nada a fazer."
+    exit 0
+fi
+
+gen() { openssl rand -hex 24; }
+
+{
+    echo "# Segredos do ambiente LOCAL (não versionado). Gerado por bin/setup-env."
+    echo "POSTGRES_SUPERUSER_PASSWORD=$(gen)"
+    echo "DELTA_OWNER_PASSWORD=$(gen)"
+    echo "DELTA_APP_PASSWORD=$(gen)"
+    echo "DELTA_ADMIN_PASSWORD=$(gen)"
+    echo "DELTA_READONLY_PASSWORD=$(gen)"
+    echo "VALKEY_PASSWORD=$(gen)"
+} > "$ENV_FILE"
+chmod 600 "$ENV_FILE"
+echo ".env gerado em $ENV_FILE"

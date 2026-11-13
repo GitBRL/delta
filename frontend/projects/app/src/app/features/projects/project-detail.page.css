@@ -1,0 +1,118 @@
+.back {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: var(--ds-space-4);
+  color: var(--ds-text-secondary);
+  font: var(--ds-text-footnote);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.back:hover {
+  color: var(--ds-accent);
+}
+
+.layout {
+  display: grid;
+  grid-template-columns: minmax(260px, 320px) minmax(0, 1fr);
+  align-items: start;
+  gap: var(--ds-space-6);
+}
+
+@media (max-width: 1080px) {
+  .layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+.side {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-4);
+}
+
+.main {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-5);
+  min-width: 0;
+}
+
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--ds-space-4);
+}
+
+.kpis {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: var(--ds-space-3);
+}
+
+.kpi {
+  border-radius: var(--ds-radius-lg);
+  cursor: pointer;
+  transition: transform var(--ds-duration-base) var(--ds-ease-spring-gentle);
+}
+
+.kpi:hover {
+  transform: translateY(-2px);
+}
+
+.kpi[aria-pressed='true'] {
+  box-shadow: 0 0 0 2px var(--ds-accent);
+}
+
+.kpi ds-kpi-tile {
+  height: 100%;
+}
+
+.kpi-skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-3);
+  padding: var(--ds-space-5);
+  border-radius: var(--ds-radius-lg);
+}
+
+.chart-card {
+  animation: ds-fade-up var(--ds-duration-slow) var(--ds-ease-spring-gentle) both;
+}
+
+.state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--ds-space-2);
+  padding: var(--ds-space-10) var(--ds-space-6);
+  border-radius: var(--ds-radius-xl);
+  text-align: center;
+}
+
+.custom {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-3);
+}
+
+.custom-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--ds-space-3);
+}
+
+.manage {
+  color: var(--ds-accent);
+  font: var(--ds-text-footnote);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.manage:hover {
+  text-decoration: underline;
+}

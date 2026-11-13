@@ -1,0 +1,10 @@
+{
+    "Invalid credential format.": "Formato de credencial inválido.",
+    "Passkey registration session expired. Please try again.": "O cadastro da passkey expirou. Tente de novo.",
+    "Passkey verification session expired. Please try again.": "A verificação da passkey expirou. Tente de novo.",
+    "Passkey not recognized. It may have been removed from your account.": "Passkey não reconhecida. Ela pode ter sido removida da sua conta.",
+    "Unable to register passkey. Please try again.": "Não foi possível cadastrar a passkey. Tente de novo.",
+    "Unable to register this passkey.": "Não foi possível cadastrar esta passkey.",
+    "Unable to sign in with this account.": "Não foi possível entrar com esta conta.",
+    "Unable to verify passkey. Please try again.": "Não foi possível conferir a passkey. Tente de novo."
+}

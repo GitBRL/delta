@@ -1,0 +1,12 @@
+{
+  "name": "@delta/cli",
+  "version": "0.1.0",
+  "description": "CLI do Delta: projetos, métricas, saúde, metas e relatórios no terminal, pelo servidor MCP.",
+  "type": "module",
+  "bin": { "delta": "bin/delta.mjs" },
+  "engines": { "node": ">=20" },
+  "files": ["bin", "src", "README.md"],
+  "scripts": { "test": "node --test test/*.test.mjs" },
+  "license": "UNLICENSED",
+  "private": true
+}

@@ -1,0 +1,238 @@
+/*
+ * Delta Design System — tokens
+ *
+ * Linguagem visual inspirada no Apple Human Interface Guidelines, na direção do Liquid Glass:
+ * a camada de navegação e controles é de vidro (translúcido, com brilho especular nas bordas e
+ * formas em cápsula) e flutua sobre o conteúdo; movimento com mola.
+ * Não usa fontes, ícones ou marcas da Apple.
+ *
+ * Tema: `light-dark()` resolve cada cor conforme `color-scheme`.
+ *   - padrão: segue o sistema (prefers-color-scheme)
+ *   - override: <html data-theme="light|dark">
+ * White label: sobrescreva `--ds-accent` (qualquer cor CSS) no :root.
+ */
+
+:root {
+  color-scheme: light dark;
+
+  /* ---------- Cor: base neutra ---------- */
+  --ds-bg: light-dark(#f4f5f8, #08090c);
+  --ds-bg-elevated: light-dark(#ffffff, #14151b);
+  --ds-bg-grouped: light-dark(#eceef3, #0f1015);
+  --ds-text: light-dark(#14151a, #f3f4f7);
+  --ds-text-secondary: light-dark(rgb(28 30 40 / 0.62), rgb(235 237 245 / 0.62));
+  --ds-text-tertiary: light-dark(rgb(28 30 40 / 0.4), rgb(235 237 245 / 0.38));
+  --ds-separator: light-dark(rgb(28 30 40 / 0.12), rgb(235 237 245 / 0.12));
+  --ds-fill: light-dark(rgb(118 120 135 / 0.12), rgb(118 120 135 / 0.24));
+  --ds-fill-strong: light-dark(rgb(118 120 135 / 0.2), rgb(118 120 135 / 0.36));
+
+  /* ---------- Cor: destaque (configurável / white label) ---------- */
+  --ds-accent: oklch(0.58 0.2 262);
+  --ds-accent-hover: color-mix(in oklch, var(--ds-accent) 86%, black);
+  --ds-accent-soft: color-mix(in oklch, var(--ds-accent) 14%, transparent);
+  --ds-on-accent: #ffffff;
+  --ds-focus-ring: color-mix(in oklch, var(--ds-accent) 55%, transparent);
+
+  /* ---------- Cor: semáforo de atenção ---------- */
+  --ds-status-healthy: light-dark(#1f9d55, #34d17a);
+  --ds-status-attention: light-dark(#c98500, #ffc23d);
+  --ds-status-critical: light-dark(#d93a3f, #ff6369);
+  --ds-status-opportunity: light-dark(#2f6fe4, #5c9bff);
+
+  /* Tendência (▲▼) */
+  --ds-trend-positive: var(--ds-status-healthy);
+  --ds-trend-negative: var(--ds-status-critical);
+
+  /* Anéis de saúde */
+  --ds-ring-acquisition: light-dark(#5b4cf0, #8579ff);
+  --ds-ring-engagement: light-dark(#0fa3a3, #2fd6cf);
+  --ds-ring-conversion: light-dark(#e8730c, #ff9b3d);
+
+  /* ---------- Material: Liquid Glass ----------
+   * Três espessuras: regular (painéis e cartões), strong (menus e avisos, onde o texto precisa
+   * de mais contraste) e clear (controles pequenos sobre outro vidro).
+   * O "vidro" é a soma de: fundo translúcido + desfoque/saturação do que está atrás + brilho
+   * especular na borda de cima (rim) + sombra na de baixo + um reflexo diagonal suave (sheen).
+   */
+  --ds-glass-bg: light-dark(rgb(255 255 255 / 0.5), rgb(40 42 56 / 0.4));
+  --ds-glass-bg-strong: light-dark(rgb(255 255 255 / 0.78), rgb(30 32 42 / 0.74));
+  --ds-glass-bg-clear: light-dark(rgb(255 255 255 / 0.28), rgb(255 255 255 / 0.07));
+  --ds-glass-border: light-dark(rgb(255 255 255 / 0.72), rgb(255 255 255 / 0.1));
+  --ds-glass-highlight: light-dark(rgb(255 255 255 / 0.95), rgb(255 255 255 / 0.24));
+  --ds-glass-shade: light-dark(rgb(20 22 40 / 0.07), rgb(0 0 0 / 0.4));
+  --ds-glass-blur: 22px;
+  --ds-glass-saturate: 190%;
+  --ds-glass-filter: blur(var(--ds-glass-blur)) saturate(var(--ds-glass-saturate));
+  --ds-glass-sheen: linear-gradient(
+    135deg,
+    light-dark(rgb(255 255 255 / 0.5), rgb(255 255 255 / 0.1)) 0%,
+    transparent 36%,
+    transparent 64%,
+    light-dark(rgb(255 255 255 / 0.22), rgb(255 255 255 / 0.04)) 100%
+  );
+  /* Borda de luz: forte em cima, fraca na lateral, sombra embaixo e um leve brilho interno. */
+  --ds-glass-rim:
+    inset 0 1px 0 var(--ds-glass-highlight),
+    inset 1px 0 0 color-mix(in srgb, var(--ds-glass-highlight) 35%, transparent),
+    inset 0 -1px 0 var(--ds-glass-shade),
+    inset 0 0 18px -6px color-mix(in srgb, var(--ds-glass-highlight) 55%, transparent);
+  --ds-glow: color-mix(in oklch, var(--ds-accent) 32%, transparent);
+  /* Luz ambiente atrás do vidro: sem cor por trás, o material não tem o que refratar. */
+  --ds-bg-ambient:
+    radial-gradient(
+      60vmax 42vmax at 0% 0%,
+      color-mix(in oklch, var(--ds-ring-acquisition) 16%, transparent),
+      transparent 70%
+    ),
+    radial-gradient(
+      52vmax 42vmax at 100% 0%,
+      color-mix(in oklch, var(--ds-ring-engagement) 13%, transparent),
+      transparent 70%
+    ),
+    radial-gradient(
+      46vmax 36vmax at 62% 100%,
+      color-mix(in oklch, var(--ds-accent) 9%, transparent),
+      transparent 72%
+    ),
+    var(--ds-bg);
+
+  /* ---------- Elevação ---------- */
+  --ds-shadow-color: light-dark(rgb(20 22 40 / 0.08), rgb(0 0 0 / 0.5));
+  --ds-shadow-1: 0 1px 2px var(--ds-shadow-color), 0 1px 1px var(--ds-shadow-color);
+  --ds-shadow-2: 0 2px 6px var(--ds-shadow-color), 0 10px 28px var(--ds-shadow-color);
+  --ds-shadow-3: 0 4px 12px var(--ds-shadow-color), 0 24px 56px var(--ds-shadow-color);
+
+  /* ---------- Forma: cantos concêntricos; controles são cápsulas (radius-full) ---------- */
+  --ds-radius-sm: 10px;
+  --ds-radius-md: 14px;
+  --ds-radius-lg: 20px;
+  --ds-radius-xl: 28px;
+  --ds-radius-full: 999px;
+
+  /* ---------- Espaçamento (base 4/8) ---------- */
+  --ds-space-1: 4px;
+  --ds-space-2: 8px;
+  --ds-space-3: 12px;
+  --ds-space-4: 16px;
+  --ds-space-5: 20px;
+  --ds-space-6: 24px;
+  --ds-space-8: 32px;
+  --ds-space-10: 40px;
+  --ds-space-12: 48px;
+  --ds-space-16: 64px;
+
+  /* ---------- Tipografia (escala no estilo HIG) ---------- */
+  --ds-font-sans:
+    -apple-system, BlinkMacSystemFont, 'Inter Variable', 'Segoe UI Variable', 'Segoe UI', Roboto,
+    'Helvetica Neue', Arial, sans-serif;
+  --ds-font-mono: ui-monospace, 'SF Mono', 'Cascadia Code', 'Roboto Mono', Menlo, monospace;
+
+  --ds-text-large-title: 700 34px / 41px var(--ds-font-sans);
+  --ds-text-title-1: 700 28px / 34px var(--ds-font-sans);
+  --ds-text-title-2: 700 22px / 28px var(--ds-font-sans);
+  --ds-text-title-3: 600 20px / 25px var(--ds-font-sans);
+  --ds-text-headline: 600 17px / 22px var(--ds-font-sans);
+  --ds-text-body: 400 17px / 22px var(--ds-font-sans);
+  --ds-text-callout: 400 16px / 21px var(--ds-font-sans);
+  --ds-text-subhead: 400 15px / 20px var(--ds-font-sans);
+  --ds-text-footnote: 400 13px / 18px var(--ds-font-sans);
+  --ds-text-caption: 400 12px / 16px var(--ds-font-sans);
+  --ds-tracking-tight: -0.022em;
+  --ds-tracking-snug: -0.012em;
+
+  /* ---------- Movimento ---------- */
+  --ds-duration-fast: 150ms;
+  --ds-duration-base: 250ms;
+  --ds-duration-slow: 350ms;
+  --ds-duration-slower: 450ms;
+  --ds-ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --ds-ease-in: cubic-bezier(0.4, 0, 1, 1);
+  /* Mola suave (sem overshoot perceptível) — gerada como curva linear() */
+  --ds-ease-spring-gentle: linear(
+    0,
+    0.006,
+    0.025 2.8%,
+    0.101 6.1%,
+    0.539 18.9%,
+    0.721 25.3%,
+    0.849 31.5%,
+    0.937 38.1%,
+    0.968 41.8%,
+    0.991 45.7%,
+    1.006 50.1%,
+    1.015 55%,
+    1.017 63.9%,
+    1.001 85.9%,
+    1
+  );
+  /* Mola com leve overshoot — para entradas e confirmações */
+  --ds-ease-spring: linear(
+    0,
+    0.009,
+    0.035 2.1%,
+    0.141,
+    0.281 6.7%,
+    0.723 12.9%,
+    0.938 16.7%,
+    1.017,
+    1.077,
+    1.121,
+    1.149 24.3%,
+    1.159,
+    1.163,
+    1.161,
+    1.154 29.9%,
+    1.129 32.8%,
+    1.051 39.6%,
+    1.017 43.1%,
+    0.991,
+    0.977 51%,
+    0.974 53.8%,
+    0.975 57.1%,
+    0.997 69.8%,
+    1.003 76.9%,
+    1.004 83.8%,
+    1
+  );
+
+  /* ---------- Camadas ---------- */
+  --ds-z-sticky: 10;
+  --ds-z-overlay: 40;
+  --ds-z-toast: 50;
+}
+
+:root[data-theme='light'] {
+  color-scheme: light;
+}
+
+:root[data-theme='dark'] {
+  color-scheme: dark;
+}
+
+/* "Reduzir transparência" do sistema: o vidro vira superfície opaca, sem desfoque. */
+@media (prefers-reduced-transparency: reduce) {
+  :root {
+    --ds-glass-bg: var(--ds-bg-elevated);
+    --ds-glass-bg-strong: var(--ds-bg-elevated);
+    --ds-glass-bg-clear: var(--ds-fill);
+    --ds-glass-border: var(--ds-separator);
+    --ds-glass-filter: none;
+    --ds-glass-sheen: none;
+  }
+}
+
+/* "Aumentar contraste": borda do vidro bem definida. */
+@media (prefers-contrast: more) {
+  :root {
+    --ds-glass-border: var(--ds-text-tertiary);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --ds-duration-fast: 0ms;
+    --ds-duration-base: 0ms;
+    --ds-duration-slow: 0ms;
+    --ds-duration-slower: 0ms;
+  }
+}

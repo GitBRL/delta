@@ -1,0 +1,341 @@
+:host {
+  display: grid;
+  grid-template-columns: 256px 1fr;
+  min-height: 100dvh;
+  background: var(--ds-bg-ambient);
+  background-attachment: fixed;
+}
+
+.sidebar {
+  position: sticky;
+  top: var(--ds-space-3);
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-4);
+  height: calc(100dvh - 2 * var(--ds-space-3));
+  margin: var(--ds-space-3);
+  padding: var(--ds-space-5) var(--ds-space-3) var(--ds-space-3);
+  border-radius: var(--ds-radius-xl);
+}
+
+.brand {
+  padding: 0 var(--ds-space-2);
+  color: var(--ds-text);
+  text-decoration: none;
+}
+
+/* Agência: selo com as iniciais + nome; com mais de uma, vira seletor. */
+.tenant {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+  padding: 6px;
+  border: 1px solid var(--ds-separator);
+  border-color: var(--ds-glass-border);
+  border-radius: var(--ds-radius-lg);
+  background: var(--ds-glass-bg-clear);
+  box-shadow: var(--ds-glass-rim);
+}
+
+.tenant:has(.tenant-select:hover) {
+  background: var(--ds-glass-bg);
+}
+
+.tenant:has(.tenant-select:focus-visible) {
+  outline: 3px solid var(--ds-focus-ring);
+  outline-offset: 2px;
+}
+
+.tenant-badge {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 30px;
+  height: 30px;
+  border-radius: var(--ds-radius-md);
+  background: var(--ds-accent-soft);
+  color: var(--ds-accent);
+  font: var(--ds-text-caption);
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.tenant-name,
+.tenant-select {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  color: var(--ds-text);
+  font: var(--ds-text-subhead);
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* O select cobre o cartão inteiro (área de clique grande); o texto fica depois do selo. */
+.tenant-select {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  padding: 0 32px 0 46px;
+  border: 0;
+  border-radius: inherit;
+  background: transparent;
+  appearance: none;
+  cursor: pointer;
+}
+
+.tenant-select:focus-visible {
+  outline: none;
+}
+
+.tenant-chevron {
+  position: absolute;
+  right: 10px;
+  color: var(--ds-text-tertiary);
+  pointer-events: none;
+}
+
+/* Navegação: grupos por assunto; rola sozinha quando a janela é baixa, sem empurrar o rodapé. */
+.nav {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: var(--ds-space-3);
+  min-height: 0;
+  margin: 0 calc(-1 * var(--ds-space-3));
+  padding: 2px var(--ds-space-3);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: transparent transparent;
+}
+
+/* A barra de rolagem só aparece quando o cursor está na navegação. */
+.nav:hover,
+.nav:focus-within {
+  scrollbar-color: var(--ds-fill-strong) transparent;
+}
+
+.nav-group {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.nav-heading {
+  margin: 0;
+  padding: 0 12px 2px;
+  color: var(--ds-text-tertiary);
+  font: var(--ds-text-caption);
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.nav-item {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: 10px;
+  height: 32px;
+  padding: 0 12px;
+  border-radius: var(--ds-radius-full);
+  color: var(--ds-text-secondary);
+  font: var(--ds-text-subhead);
+  font-weight: 500;
+  text-decoration: none;
+  transition:
+    background-color var(--ds-duration-fast) var(--ds-ease-out),
+    transform var(--ds-duration-base) var(--ds-ease-spring);
+}
+
+.nav-item svg {
+  flex: none;
+  opacity: 0.85;
+}
+
+.nav-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.nav-item:hover {
+  background: var(--ds-fill);
+  color: var(--ds-text);
+}
+
+.nav-item:active {
+  transform: scale(0.98);
+}
+
+/* Anel de foco por dentro: não encosta no vizinho nem é cortado pela rolagem. */
+.nav-item:focus-visible {
+  outline: 2px solid var(--ds-focus-ring);
+  outline-offset: -2px;
+  border-radius: var(--ds-radius-full);
+}
+
+/* Página atual: gota de vidro tingida com a cor de destaque. */
+.nav-item.active {
+  background:
+    var(--ds-glass-sheen), color-mix(in oklch, var(--ds-accent) 16%, var(--ds-glass-bg-clear));
+  box-shadow:
+    var(--ds-glass-rim),
+    0 1px 2px var(--ds-shadow-color);
+  color: var(--ds-accent);
+  font-weight: 600;
+}
+
+.nav-item.active svg {
+  opacity: 1;
+}
+
+/* Rodapé: a conta ocupa a largura toda; tema e sair ficam no menu dela (app-account-menu). */
+.footer {
+  padding-top: var(--ds-space-3);
+  border-top: 1px solid var(--ds-separator);
+}
+
+.content {
+  min-width: 0;
+  padding: var(--ds-space-8) var(--ds-space-8) var(--ds-space-12);
+}
+
+/* Celular: barra superior com rolagem horizontal da navegação. */
+@media (max-width: 860px) {
+  /* minmax(0, …): a navegação rola na horizontal sem alargar a página. */
+  :host {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .sidebar {
+    position: sticky;
+    top: 0;
+    z-index: var(--ds-z-sticky);
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--ds-space-3);
+    height: auto;
+    margin: 0;
+    padding: var(--ds-space-3);
+    border-radius: 0 0 var(--ds-radius-lg) var(--ds-radius-lg);
+  }
+
+  .tenant {
+    flex: 1;
+    min-width: 140px;
+  }
+
+  .nav {
+    order: 3;
+    flex: none;
+    flex-direction: row;
+    gap: 2px;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    overflow-x: auto;
+    overflow-y: visible;
+  }
+
+  .nav-group {
+    display: contents;
+  }
+
+  .nav-heading {
+    display: none;
+  }
+
+  .footer {
+    padding: 0;
+    border: 0;
+  }
+
+  .content {
+    padding: var(--ds-space-5) var(--ds-space-4) var(--ds-space-10);
+  }
+}
+
+/* Aviso de conta que perdeu o acesso (reconectar em Integrações). */
+.banner {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-2);
+  margin-bottom: var(--ds-space-5);
+  padding: var(--ds-space-2) var(--ds-space-3);
+  border-radius: var(--ds-radius-md);
+  background: color-mix(in srgb, var(--ds-status-critical) 12%, transparent);
+  color: var(--ds-text);
+  font: var(--ds-text-footnote);
+}
+
+.banner svg {
+  flex: none;
+  color: var(--ds-status-critical);
+}
+
+.banner span {
+  flex: 1;
+}
+
+.banner a {
+  font-weight: 600;
+  color: var(--ds-accent);
+  text-decoration: none;
+}
+
+/* Teste grátis acabando (atenção) ou acabado (crítico). */
+.banner[data-testid='trial-banner']:not(.is-ended) {
+  background: color-mix(in srgb, var(--ds-status-attention) 14%, transparent);
+}
+.banner[data-testid='trial-banner']:not(.is-ended) svg {
+  color: var(--ds-status-attention);
+}
+
+.banner-close {
+  display: inline-grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--ds-text-secondary);
+  cursor: pointer;
+}
+
+/* Portal do cliente: a marca da agência no lugar do Δ. */
+.agency-brand {
+  display: flex;
+  align-items: center;
+  min-height: 36px;
+}
+.agency-logo {
+  max-width: 160px;
+  max-height: 40px;
+  object-fit: contain;
+}
+.agency-name {
+  font: var(--ds-text-headline);
+  font-weight: 700;
+  color: var(--ds-accent);
+}
+
+.nav-badge {
+  display: inline-grid;
+  place-items: center;
+  min-width: 20px;
+  height: 20px;
+  margin-left: auto;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: var(--ds-accent);
+  color: #fff;
+  font: var(--ds-text-caption);
+  font-weight: 700;
+}
