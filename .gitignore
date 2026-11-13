@@ -1,0 +1,10 @@
+# Segredos locais (gerados por bin/setup-env)
+.env
+
+# Editores e SO
+.idea/
+.DS_Store
+Thumbs.db
+*.log
+
+# backend/ e frontend/ têm .gitignore próprios (vendor, node_modules, dist, .env do Laravel)

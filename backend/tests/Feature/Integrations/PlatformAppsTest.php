@@ -12,8 +12,8 @@ use Illuminate\Support\Facades\Http;
 
 const META_ID = '1234567890';
 const META_SECRET = 'a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6';
-const GOOGLE_ID = '123-abc.apps.googleusercontent.com';
-const GOOGLE_SECRET = 'GOCSPX-abcdefghijklmnopqrstuvwxyz12';
+const GOOGLE_ID = 'cliente-teste.apps.googleusercontent.com';
+const GOOGLE_SECRET = 'segredo-google-de-teste-yz12';
 
 beforeEach(function () {
     [$this->tenant, $this->owner] = tenantWithOwner('Agência A');
